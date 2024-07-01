@@ -1,0 +1,12 @@
+.DS_Store
+.Rhistory
+.Rproj.user
+
+*.csv
+*.jpeg
+data/
+documents/
+outputs/
+saved_objects/
+scripts/archive/
+scripts/staging/
