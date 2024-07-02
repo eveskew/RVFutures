@@ -37,7 +37,7 @@ load_country_map <- function() {
 # Function to crop and generate a resampled density raster starting from a 
 # count data raster
 
-resample_count_raster <- function(count_raster, crop_extent, raster_for_resampling) {
+resample_count_raster <- function(count_raster, crop_extent, raster_for_resampling, threshold = 0.01) {
   
   # Crop the count raster to the desired extent
   crop <- terra::crop(count_raster, crop_extent)
@@ -49,7 +49,7 @@ resample_count_raster <- function(count_raster, crop_extent, raster_for_resampli
     density * terra::cellSize(density, unit = "km"),
     "sum", na.rm = TRUE
   )
-  assertthat::assert_that(0.99 < (tot/tot.density) & 1.01 > (tot/tot.density))
+  assertthat::assert_that((1 - threshold) < (tot/tot.density) & (1 + threshold) > (tot/tot.density))
   
   # Resample the density raster to the desired resolution
   density.resample <- terra::resample(density, raster_for_resampling, "bilinear")
@@ -57,7 +57,7 @@ resample_count_raster <- function(count_raster, crop_extent, raster_for_resampli
     density.resample * terra::cellSize(density.resample, unit = "km"),
     "sum", na.rm = TRUE
   )
-  assertthat::assert_that(0.99 < (tot/tot.density.resampled) & 1.01 > (tot/tot.density.resampled))
+  assertthat::assert_that((1 - threshold) < (tot/tot.density.resampled) & (1 + threshold) > (tot/tot.density.resampled))
   
   return(density.resample)
 }
