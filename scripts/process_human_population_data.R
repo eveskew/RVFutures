@@ -32,7 +32,7 @@ for(i in years) {
   # Reproject the raster to EPSG 4326, if needed
   if(crs(s, describe = TRUE)$code != "4326" | is.na(crs(s, describe = TRUE)$code)) {s <- project(x = s, y = "epsg:4326")}
   
-  # Resample the raster to 2.5 minutes and check that the total population
+  # Resample the raster to 2.5 arcminutes and check that the total population
   # counts are preserved
   s.resample <- resample(s, x, "bilinear")
   
@@ -94,7 +94,7 @@ ggsave(
 #==============================================================================
 
 
-# Modify Wang et al. projected population data under the SSPs
+# Modify Wang et al. projected population data
 # https://www.nature.com/articles/s41597-022-01675-x
 
 years <- as.character(c(2025, 2030, 2035, 2040, 2045, 2050))
@@ -107,12 +107,12 @@ for(i in years) {
   # Pull raster file names for that year
   file.ssp2 <- list.files(
     path = "data/rasters/human_population/SPP2", 
-    pattern = i,
+    pattern = paste0(i, ".tif$"),
     full.names = TRUE
   )
   file.ssp5 <- list.files(
     path = "data/rasters/human_population/SPP5", 
-    pattern = i,
+    pattern = paste0(i, ".tif$"),
     full.names = TRUE
   )
   
@@ -128,7 +128,7 @@ for(i in years) {
   # total population counts are preserved
   r.ssp2.crop <- crop(r.ssp2, east.africa)
   r.ssp2.resample <- resample(r.ssp2.crop, x, "bilinear")
-  r.ssp2.mask <- mask(r.ssp2.resample, r$pd_2001)
+  r.ssp2.mask <- mask(r.ssp2.resample, east.africa)
   
   r.tot.count <- global(
     r.ssp2.crop * cellSize(r.ssp2.crop, unit = "km"), 
@@ -142,7 +142,7 @@ for(i in years) {
   
   r.ssp5.crop <- crop(r.ssp5, east.africa)
   r.ssp5.resample <- resample(r.ssp5.crop, x, "bilinear")
-  r.ssp5.mask <- mask(r.ssp5.resample, r$pd_2001)
+  r.ssp5.mask <- mask(r.ssp5.resample, east.africa)
   
   r.tot.count <- global(
     r.ssp5.crop * cellSize(r.ssp5.crop, unit = "km"), 
@@ -155,10 +155,6 @@ for(i in years) {
   assert_that(0.99 < (r.tot.count/r.r.tot.count) & 1.01 > (r.tot.count/r.r.tot.count))
   
   # Save the merged raster files
-  if(!dir.exists("data/rasters/human_population/processed")) {
-    dir.create("data/rasters/human_population/processed")
-  }
-  
   writeRaster(
     r.ssp2.mask, 
     paste0("data/rasters/human_population/processed/SSP2_2.5min_", i, ".tif"),
@@ -167,6 +163,103 @@ for(i in years) {
   writeRaster(
     r.ssp5.mask, 
     paste0("data/rasters/human_population/processed/SSP5_2.5min_", i, ".tif"),
+    overwrite = TRUE
+  )
+}
+
+#==============================================================================
+
+
+# Modify Boke-Olen et al. projected population data
+# https://www.nature.com/articles/sdata2016130
+
+years <- as.character(2001:2050)
+east.africa <- load_country_map()
+x <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
+threshold = 0.015
+
+# Loop through all years
+for(i in years) {
+  
+  # Pull raster file names for that year
+  file.ssp126 <- list.files(
+    path = "data/rasters/human_population/african-future-population_SSP1-RCP2.6_2000-01-01_2100-12-31_1year_original", 
+    pattern = paste0(i, ".tif$"),
+    full.names = TRUE
+  )
+  file.ssp245 <- list.files(
+    path = "data/rasters/human_population/african-future-population_SSP2-RCP4.5_2000-01-01_2100-12-31_1year_original", 
+    pattern = paste0(i, ".tif$"),
+    full.names = TRUE
+  )
+  file.ssp585 <- list.files(
+    path = "data/rasters/human_population/african-future-population_SSP5-RCP8.5_2000-01-01_2100-12-31_1year_original", 
+    pattern = paste0(i, ".tif$"),
+    full.names = TRUE
+  )
+  
+  # Import the rasters
+  r.ssp126 <- terra::rast(file.ssp126)
+  r.ssp245 <- terra::rast(file.ssp245)
+  r.ssp585 <- terra::rast(file.ssp585)
+  
+  # Reproject the rasters to EPSG 4326, if needed
+  if(crs(r.ssp126, describe = TRUE)$code != "4326" | is.na(crs(r.ssp126, describe = TRUE)$code)) {r.ssp126 <- project(x = r.ssp126, y = "epsg:4326")}
+  if(crs(r.ssp245, describe = TRUE)$code != "4326" | is.na(crs(r.ssp245, describe = TRUE)$code)) {r.ssp245 <- project(x = r.ssp245, y = "epsg:4326")}
+  if(crs(r.ssp585, describe = TRUE)$code != "4326" | is.na(crs(r.ssp585, describe = TRUE)$code)) {r.ssp585 <- project(x = r.ssp585, y = "epsg:4326")}
+  
+  # Crop, resample from count to density raster, and mask the rasters, 
+  # checking that the total population counts are preserved
+  r.ssp126.crop <- crop(r.ssp126, east.africa)
+  r.ssp126.resample <- resample_count_raster(r.ssp126.crop, east.africa, x, threshold = threshold)
+  r.ssp126.mask <- mask(r.ssp126.resample, east.africa)
+  names(r.ssp126.mask) <- paste0("SSP126_", i)
+  
+  r.tot.count <- global(r.ssp126.crop, "sum", na.rm = TRUE)
+  r.r.tot.count <- global(
+    r.ssp126.resample * cellSize(r.ssp126.resample, unit = "km"), 
+    "sum", na.rm = TRUE
+  )
+  assert_that((1 - threshold) < (r.tot.count/r.r.tot.count) & (1 + threshold) > (r.tot.count/r.r.tot.count))
+  
+  r.ssp245.crop <- crop(r.ssp245, east.africa)
+  r.ssp245.resample <- resample_count_raster(r.ssp245.crop, east.africa, x, threshold = threshold)
+  r.ssp245.mask <- mask(r.ssp245.resample, east.africa)
+  names(r.ssp245.mask) <- paste0("SSP245_", i)
+  
+  r.tot.count <- global(r.ssp245.crop, "sum", na.rm = TRUE)
+  r.r.tot.count <- global(
+    r.ssp245.resample * cellSize(r.ssp245.resample, unit = "km"), 
+    "sum", na.rm = TRUE
+  )
+  assert_that(0.99 < (r.tot.count/r.r.tot.count) & 1.01 > (r.tot.count/r.r.tot.count))
+  
+  r.ssp585.crop <- crop(r.ssp585, east.africa)
+  r.ssp585.resample <- resample_count_raster(r.ssp585.crop, east.africa, x, threshold = threshold)
+  r.ssp585.mask <- mask(r.ssp585.resample, east.africa)
+  names(r.ssp585.mask) <- paste0("SSP585_", i)
+  
+  r.tot.count <- global(r.ssp585.crop, "sum", na.rm = TRUE)
+  r.r.tot.count <- global(
+    r.ssp585.resample * cellSize(r.ssp585.resample, unit = "km"), 
+    "sum", na.rm = TRUE
+  )
+  assert_that(0.99 < (r.tot.count/r.r.tot.count) & 1.01 > (r.tot.count/r.r.tot.count))
+  
+  # Save the merged raster files
+  writeRaster(
+    r.ssp126.mask, 
+    paste0("data/rasters/human_population/processed/SSP126_2.5min_", i, ".tif"),
+    overwrite = TRUE
+  )
+  writeRaster(
+    r.ssp245.mask, 
+    paste0("data/rasters/human_population/processed/SSP245_2.5min_", i, ".tif"),
+    overwrite = TRUE
+  )
+  writeRaster(
+    r.ssp585.mask, 
+    paste0("data/rasters/human_population/processed/SSP585_2.5min_", i, ".tif"),
     overwrite = TRUE
   )
 }
@@ -211,20 +304,21 @@ r <- rast(files)
 
 # Display various future projections of human population density
 r.sub <- r %>% 
-  select(matches("2025|2030|2035|2040|2045|2050"))
+  select(matches("2025|2030|2035|2040|2045|2050")) %>%
+  select(matches("linear|SSP126|SSP245|SSP585"))
 
 # Plot and save the human population raster data
 p <- ggplot() +
-  geom_spatraster(data = r.sub, maxcell = 10000) +
+  geom_spatraster(data = r.sub, maxcell = 1000) +
   scale_fill_distiller(palette = "Spectral", na.value = "white") +
-  facet_wrap(~lyr, nrow = 3) +
+  facet_wrap(~lyr, nrow = 4) +
   theme_void()
 
 ggsave(
   p,
   filename = "outputs/predictor_layers/human_population_projected.jpg",
   width = 5000,
-  height = 3000,
+  height = 4000,
   units = "px"
 )
  
