@@ -147,7 +147,7 @@ r <- rast(files)
 assert_that(dim(r)[3] == 49 * 12)
 
 r.sub <- r %>%
-  select(matches("2010|2015|2020|2030|2040|2050"))
+  select(matches("2000|2010|2020|2030|2040|2050"))
 
 # Plot and save the precipitation raster data
 p <- ggplot() +
