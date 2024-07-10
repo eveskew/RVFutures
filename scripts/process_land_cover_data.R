@@ -67,13 +67,15 @@ r.sub <- select(r, matches(pattern))
 # Reproject the raster to EPSG 4326, if needed
 if(crs(r.sub, describe = TRUE)$code != "4326" | is.na(crs(r.sub, describe = TRUE)$code)) {r.sub <- project(x = r.sub, y = "epsg:4326")}
 
-# Crop the raster and set NA values
+# Crop the raster to minimize its size and set NA values
 r.crop <- crop(r.sub, east.africa)
 r.crop[r.crop > 1000000] <- NA
 
-# Disaggregate the raster to 2.5 arcminutes
+# Disaggregate the raster to 2.5 arcminutes and crop again to ensure proper
+# final dimensions
 # Original resolution is 15 arcminutes (0.25 degrees)
 r.crop <- disagg(r.crop, fact = 6)
+r.crop <- crop(r.crop, east.africa)
 
 base.names <- c(
   "c3ann", "c3nfx", "c3per", "c4ann", "c4per", "pastr", "primf",
@@ -134,13 +136,15 @@ for(s in scenarios) {
   # Reproject the raster to EPSG 4326, if needed
   if(crs(r.sub, describe = TRUE)$code != "4326" | is.na(crs(r.sub, describe = TRUE)$code)) {r.sub <- project(x = r.sub, y = "epsg:4326")}
   
-  # Crop the raster and set NA values
+  # Crop the raster to minimize its size and set NA values
   r.crop <- crop(r.sub, east.africa)
   r.crop[r.crop > 1000000] <- NA
   
-  # Disaggregate the raster to 2.5 arcminutes
+  # Disaggregate the raster to 2.5 arcminutes and crop again to ensure proper
+  # final dimensions
   # Original resolution is 15 arcminutes (0.25 degrees)
   r.crop <- disagg(r.crop, fact = 6)
+  r.crop <- crop(r.crop, east.africa)
   
   # Loop through years and generate raster files with all 14 variables from each
   # year
