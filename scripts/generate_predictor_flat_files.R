@@ -146,9 +146,9 @@ d$human_pop <- NA
 for(year in years) {
   
   # Subset to the correct raster layer
-  # Use SSP245 data for years after 2020
+  # Use 2020 data for years after 2020
   if(year <= 2020) {layer <- r[[paste0("pd_", year)]]}
-  if(year > 2020) {layer <- r[[paste0("SSP245_", year)]]}
+  if(year > 2020) {layer <- r$pd_2020}
   
   # Extract values
   d[d$year == year, "human_pop"] <- as.numeric(values(layer))

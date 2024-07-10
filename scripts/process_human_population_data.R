@@ -74,7 +74,7 @@ assert_that(dim(r)[3] == 20)
 
 # Plot and save the human population raster data
 p <- ggplot() +
-  geom_spatraster(data = r, maxcell = 10000) +
+  geom_spatraster(data = r, maxcell = 5000) +
   scale_fill_distiller(palette = "Spectral", na.value = "white") +
   facet_wrap(~lyr) +
   theme_void()
@@ -105,6 +105,11 @@ x <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
 for(i in years) {
   
   # Pull raster file names for that year
+  file.ssp1 <- list.files(
+    path = "data/rasters/human_population/SPP1", 
+    pattern = paste0(i, ".tif$"),
+    full.names = TRUE
+  )
   file.ssp2 <- list.files(
     path = "data/rasters/human_population/SPP2", 
     pattern = paste0(i, ".tif$"),
@@ -117,23 +122,33 @@ for(i in years) {
   )
   
   # Import the rasters
+  r.ssp1 <- terra::rast(file.ssp1)
   r.ssp2 <- terra::rast(file.ssp2)
   r.ssp5 <- terra::rast(file.ssp5)
   
   # Reproject the rasters to EPSG 4326, if needed
+  if(crs(r.ssp1, describe = TRUE)$code != "4326" | is.na(crs(r.ssp1, describe = TRUE)$code)) {r.ssp1 <- project(x = r.ssp1, y = "epsg:4326")}
   if(crs(r.ssp2, describe = TRUE)$code != "4326" | is.na(crs(r.ssp2, describe = TRUE)$code)) {r.ssp2 <- project(x = r.ssp2, y = "epsg:4326")}
   if(crs(r.ssp5, describe = TRUE)$code != "4326" | is.na(crs(r.ssp5, describe = TRUE)$code)) {r.ssp5 <- project(x = r.ssp5, y = "epsg:4326")}
   
-  # Crop, resample, and mask the rasters and check that the 
-  # total population counts are preserved
-  r.ssp2.crop <- crop(r.ssp2, east.africa)
-  r.ssp2.resample <- resample(r.ssp2.crop, x, "bilinear")
-  r.ssp2.mask <- mask(r.ssp2.resample, east.africa)
+  # Crop, resample from count to density raster, and mask the rasters, 
+  # checking that the total population counts are preserved
+  r.ssp1.crop <- crop(r.ssp1, east.africa)
+  r.ssp1.resample <- resample_count_raster(r.ssp1.crop, east.africa, x)
+  r.ssp1.mask <- mask(r.ssp1.resample, east.africa)
   
-  r.tot.count <- global(
-    r.ssp2.crop * cellSize(r.ssp2.crop, unit = "km"), 
+  r.tot.count <- global(r.ssp1.crop, "sum", na.rm = TRUE)
+  r.r.tot.count <- global(
+    r.ssp1.resample * cellSize(r.ssp1.resample, unit = "km"), 
     "sum", na.rm = TRUE
   )
+  assert_that(0.99 < (r.tot.count/r.r.tot.count) & 1.01 > (r.tot.count/r.r.tot.count))
+  
+  r.ssp2.crop <- crop(r.ssp2, east.africa)
+  r.ssp2.resample <- resample_count_raster(r.ssp2.crop, east.africa, x)
+  r.ssp2.mask <- mask(r.ssp2.resample, east.africa)
+  
+  r.tot.count <- global(r.ssp2.crop, "sum", na.rm = TRUE)
   r.r.tot.count <- global(
     r.ssp2.resample * cellSize(r.ssp2.resample, unit = "km"), 
     "sum", na.rm = TRUE
@@ -141,13 +156,10 @@ for(i in years) {
   assert_that(0.99 < (r.tot.count/r.r.tot.count) & 1.01 > (r.tot.count/r.r.tot.count))
   
   r.ssp5.crop <- crop(r.ssp5, east.africa)
-  r.ssp5.resample <- resample(r.ssp5.crop, x, "bilinear")
+  r.ssp5.resample <- resample_count_raster(r.ssp5.crop, east.africa, x)
   r.ssp5.mask <- mask(r.ssp5.resample, east.africa)
   
-  r.tot.count <- global(
-    r.ssp5.crop * cellSize(r.ssp5.crop, unit = "km"), 
-    "sum", na.rm = TRUE
-  )
+  r.tot.count <- global(r.ssp5.crop, "sum", na.rm = TRUE)
   r.r.tot.count <- global(
     r.ssp5.resample * cellSize(r.ssp5.resample, unit = "km"), 
     "sum", na.rm = TRUE
@@ -155,6 +167,11 @@ for(i in years) {
   assert_that(0.99 < (r.tot.count/r.r.tot.count) & 1.01 > (r.tot.count/r.r.tot.count))
   
   # Save the merged raster files
+  writeRaster(
+    r.ssp1.mask, 
+    paste0("data/rasters/human_population/processed/SSP1_2.5min_", i, ".tif"),
+    overwrite = TRUE
+  )
   writeRaster(
     r.ssp2.mask, 
     paste0("data/rasters/human_population/processed/SSP2_2.5min_", i, ".tif"),
@@ -305,11 +322,11 @@ r <- rast(files)
 # Display various future projections of human population density
 r.sub <- r %>% 
   select(matches("2025|2030|2035|2040|2045|2050")) %>%
-  select(matches("linear|SSP126|SSP245|SSP585"))
+  select(matches("linear|SSP1_|SSP2_|SSP5_"))
 
 # Plot and save the human population raster data
 p <- ggplot() +
-  geom_spatraster(data = r.sub, maxcell = 1000) +
+  geom_spatraster(data = r.sub, maxcell = 5000) +
   scale_fill_distiller(palette = "Spectral", na.value = "white") +
   facet_wrap(~lyr, nrow = 4) +
   theme_void()
