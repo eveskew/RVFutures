@@ -24,6 +24,8 @@ for(i in years) {
     full.names = TRUE
   )
   
+  assert_that(length(files) == 12)
+  
   # Combine the rasters
   s <- sprc(files)
   s <- merge(s)
@@ -34,10 +36,11 @@ for(i in years) {
   
   # Resample the raster to 2.5 arcminutes and check that the total population
   # counts are preserved
-  s.resample <- resample(s, x, "bilinear")
+  s.crop <- crop(s, x)
+  s.resample <- resample(s.crop, x, "bilinear")
   
   s.tot.count <- global(
-    s * cellSize(s, unit = "km"), 
+    s.crop * cellSize(s.crop, unit = "km"), 
     "sum", na.rm = TRUE
   )
   s.r.tot.count <- global(
@@ -131,11 +134,10 @@ for(i in years) {
   if(crs(r.ssp2, describe = TRUE)$code != "4326" | is.na(crs(r.ssp2, describe = TRUE)$code)) {r.ssp2 <- project(x = r.ssp2, y = "epsg:4326")}
   if(crs(r.ssp5, describe = TRUE)$code != "4326" | is.na(crs(r.ssp5, describe = TRUE)$code)) {r.ssp5 <- project(x = r.ssp5, y = "epsg:4326")}
   
-  # Crop, resample from count to density raster, and mask the rasters, 
+  # Crop and resample from count to density raster, 
   # checking that the total population counts are preserved
   r.ssp1.crop <- crop(r.ssp1, east.africa)
   r.ssp1.resample <- resample_count_raster(r.ssp1.crop, east.africa, x)
-  r.ssp1.mask <- mask(r.ssp1.resample, east.africa)
   
   r.tot.count <- global(r.ssp1.crop, "sum", na.rm = TRUE)
   r.r.tot.count <- global(
@@ -146,7 +148,6 @@ for(i in years) {
   
   r.ssp2.crop <- crop(r.ssp2, east.africa)
   r.ssp2.resample <- resample_count_raster(r.ssp2.crop, east.africa, x)
-  r.ssp2.mask <- mask(r.ssp2.resample, east.africa)
   
   r.tot.count <- global(r.ssp2.crop, "sum", na.rm = TRUE)
   r.r.tot.count <- global(
@@ -157,7 +158,6 @@ for(i in years) {
   
   r.ssp5.crop <- crop(r.ssp5, east.africa)
   r.ssp5.resample <- resample_count_raster(r.ssp5.crop, east.africa, x)
-  r.ssp5.mask <- mask(r.ssp5.resample, east.africa)
   
   r.tot.count <- global(r.ssp5.crop, "sum", na.rm = TRUE)
   r.r.tot.count <- global(
@@ -168,17 +168,17 @@ for(i in years) {
   
   # Save the merged raster files
   writeRaster(
-    r.ssp1.mask, 
+    r.ssp1.resample, 
     paste0("data/rasters/human_population/processed/SSP1_2.5min_", i, ".tif"),
     overwrite = TRUE
   )
   writeRaster(
-    r.ssp2.mask, 
+    r.ssp2.resample, 
     paste0("data/rasters/human_population/processed/SSP2_2.5min_", i, ".tif"),
     overwrite = TRUE
   )
   writeRaster(
-    r.ssp5.mask, 
+    r.ssp5.resample, 
     paste0("data/rasters/human_population/processed/SSP5_2.5min_", i, ".tif"),
     overwrite = TRUE
   )
@@ -225,12 +225,11 @@ for(i in years) {
   if(crs(r.ssp245, describe = TRUE)$code != "4326" | is.na(crs(r.ssp245, describe = TRUE)$code)) {r.ssp245 <- project(x = r.ssp245, y = "epsg:4326")}
   if(crs(r.ssp585, describe = TRUE)$code != "4326" | is.na(crs(r.ssp585, describe = TRUE)$code)) {r.ssp585 <- project(x = r.ssp585, y = "epsg:4326")}
   
-  # Crop, resample from count to density raster, and mask the rasters, 
+  # Crop and resample from count to density raster, 
   # checking that the total population counts are preserved
   r.ssp126.crop <- crop(r.ssp126, east.africa)
   r.ssp126.resample <- resample_count_raster(r.ssp126.crop, east.africa, x, threshold = threshold)
-  r.ssp126.mask <- mask(r.ssp126.resample, east.africa)
-  names(r.ssp126.mask) <- paste0("SSP126_", i)
+  names(r.ssp126.resample) <- paste0("SSP126_", i)
   
   r.tot.count <- global(r.ssp126.crop, "sum", na.rm = TRUE)
   r.r.tot.count <- global(
@@ -241,8 +240,7 @@ for(i in years) {
   
   r.ssp245.crop <- crop(r.ssp245, east.africa)
   r.ssp245.resample <- resample_count_raster(r.ssp245.crop, east.africa, x, threshold = threshold)
-  r.ssp245.mask <- mask(r.ssp245.resample, east.africa)
-  names(r.ssp245.mask) <- paste0("SSP245_", i)
+  names(r.ssp245.resample) <- paste0("SSP245_", i)
   
   r.tot.count <- global(r.ssp245.crop, "sum", na.rm = TRUE)
   r.r.tot.count <- global(
@@ -253,8 +251,7 @@ for(i in years) {
   
   r.ssp585.crop <- crop(r.ssp585, east.africa)
   r.ssp585.resample <- resample_count_raster(r.ssp585.crop, east.africa, x, threshold = threshold)
-  r.ssp585.mask <- mask(r.ssp585.resample, east.africa)
-  names(r.ssp585.mask) <- paste0("SSP585_", i)
+  names(r.ssp585.resample) <- paste0("SSP585_", i)
   
   r.tot.count <- global(r.ssp585.crop, "sum", na.rm = TRUE)
   r.r.tot.count <- global(
@@ -265,17 +262,17 @@ for(i in years) {
   
   # Save the merged raster files
   writeRaster(
-    r.ssp126.mask, 
+    r.ssp126.resample, 
     paste0("data/rasters/human_population/processed/SSP126_2.5min_", i, ".tif"),
     overwrite = TRUE
   )
   writeRaster(
-    r.ssp245.mask, 
+    r.ssp245.resample, 
     paste0("data/rasters/human_population/processed/SSP245_2.5min_", i, ".tif"),
     overwrite = TRUE
   )
   writeRaster(
-    r.ssp585.mask, 
+    r.ssp585.resample, 
     paste0("data/rasters/human_population/processed/SSP585_2.5min_", i, ".tif"),
     overwrite = TRUE
   )
