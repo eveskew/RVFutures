@@ -32,8 +32,8 @@ r.r <- resample(r, x, "bilinear")
 # Information provided here: https://www.isric.org/explore/soilgrids/faq-soilgrids
 r.r[[which(str_detect(names(r.r), "bdod|nitrogen"))]] <- 
   r.r[[which(str_detect(names(r.r), "bdod|nitrogen"))]] / 100
-r.r[[which(str_detect(names(r.r), "cfvo|clay|phh2o|sand|silt|soc"))]] <- 
-  r.r[[which(str_detect(names(r.r), "cfvo|clay|phh2o|sand|silt|soc"))]] / 10
+r.r[[which(str_detect(names(r.r), "cec|cfvo|clay|phh2o|sand|silt|soc"))]] <- 
+  r.r[[which(str_detect(names(r.r), "cec|cfvo|clay|phh2o|sand|silt|soc"))]] / 10
 
 # Save the resampled, rescaled raster file
 if(!dir.exists("data/rasters/soil/processed")) {
@@ -56,7 +56,7 @@ east.africa <- load_country_map()
 
 # Loop through the soil variables and plot
 
-variable <- c("bdod", "cfvo", "clay", "nitrogen", "phh2o", "sand", "silt", "soc")
+variable <- c("bdod", "cec", "cfvo", "clay", "nitrogen", "phh2o", "sand", "silt", "soc")
 
 if(!dir.exists("outputs/predictor_layers")) {
   dir.create("outputs/predictor_layers")

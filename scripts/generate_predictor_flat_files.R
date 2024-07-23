@@ -52,6 +52,9 @@ r <- rast("data/rasters/soil/processed/soil_2.5min.tif")
 d$`bdod_0-5cm_mean` <- as.numeric(values(r$`bdod_0-5cm_mean`))
 sum(is.na(d$`bdod_0-5cm_mean`))
 
+d$`cec_0-5cm_mean` <- as.numeric(values(r$`cec_0-5cm_mean`))
+sum(is.na(d$`cec_0-5cm_mean`))
+
 d$`cfvo_0-5cm_mean` <- as.numeric(values(r$`cfvo_0-5cm_mean`))
 sum(is.na(d$`cfvo_0-5cm_mean`))
 

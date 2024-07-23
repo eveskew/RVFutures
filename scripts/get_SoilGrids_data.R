@@ -17,7 +17,7 @@ wcs.service <- "SERVICE=WCS"
 wcs.version <- "VERSION=2.0.1" 
 
 # Loop through variables of interest and pull down data
-for(voi in c("bdod", "cfvo", "clay", "nitrogen", "phh2o", "sand", "silt", "soc")) {
+for(voi in c("bdod", "cec", "cfvo", "clay", "nitrogen", "phh2o", "sand", "silt", "soc")) {
   
   for(depth in c("0-5cm", "5-15cm", "15-30cm")) {
     

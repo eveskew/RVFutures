@@ -141,10 +141,10 @@ ggplot() +
 
 
 ggplot() +
-  geom_jitter(data = d.random, aes(x = RVF_presence, y = monthly_temp))
+  geom_jitter(data = d.random, aes(x = RVF_presence, y = monthly_tmax))
 
 ggplot() +
-  geom_jitter(data = d.popweighted, aes(x = RVF_presence, y = monthly_temp))
+  geom_jitter(data = d.popweighted, aes(x = RVF_presence, y = monthly_tmax))
 
 #==============================================================================
 
