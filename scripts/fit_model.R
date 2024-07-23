@@ -90,7 +90,7 @@ xgb.spec <- boost_tree(
   sample_size = tune(),
   stop_iter = tune(),
   tree_depth = tune(),
-  trees = 2000
+  trees = tune()
 ) %>%
   set_engine("xgboost") %>%
   set_mode("classification")
@@ -107,12 +107,13 @@ xgb.RVF.workflow
 
 # Parameter tuning: generate parameter grid, then tune using the training data
 xgb.grid <- grid_max_entropy(
-  learn_rate(c(-5, -1)),
-  min_n(c(2L, 40L)),
+  learn_rate(c(-4, -1)),
+  min_n(c(2L, 20L)),
   mtry(c(2L, 20L)),
-  sample_prop(c(0.1, 0.8)),
-  stop_iter(c(5L, 20L)),
+  sample_prop(c(0.1, 0.9)),
+  stop_iter(c(3L, 20L)),
   tree_depth(c(1L, 3L)),
+  trees(c(100L, 5000L)),
   size = 250
 )
 
@@ -129,7 +130,7 @@ xgb.RVF.tune <- tune_grid(
 saveRDS(xgb.RVF.tune, "saved_objects/xgb.RVF.tune.rds")
 
 show_best(xgb.RVF.tune, metric = "roc_auc")
-autoplot(xgb.RVF.tune)
+autoplot(xgb.RVF.tune, metric = "roc_auc")
 
 # Finalize the machine learning workflow using the best parameter set
 xgb.RVF.final <- xgb.RVF.workflow %>%
