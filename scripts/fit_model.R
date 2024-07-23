@@ -128,12 +128,12 @@ xgb.RVF.tune <- tune_grid(
 )
 saveRDS(xgb.RVF.tune, "saved_objects/xgb.RVF.tune.rds")
 
-show_best(xgb.RVF.tune, "roc_auc")
+show_best(xgb.RVF.tune, metric = "roc_auc")
 autoplot(xgb.RVF.tune)
 
 # Finalize the machine learning workflow using the best parameter set
 xgb.RVF.final <- xgb.RVF.workflow %>%
-  finalize_workflow(select_best(xgb.RVF.tune, "roc_auc")) %>%
+  finalize_workflow(select_best(xgb.RVF.tune, metric = "roc_auc")) %>%
   last_fit(d.split)
 
 xgb.RVF.final
