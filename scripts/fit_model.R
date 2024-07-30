@@ -18,9 +18,7 @@ d <- read_csv("data/outbreak_data/outbreak_popweighted_predictors.csv") %>%
     human_pop, travel_time_to_healthcare,
     dist_to_lake_all, dist_to_lake_1, dist_to_lake_5, dist_to_lake_10,
     dist_to_river_10,
-    c3ann, c3nfx, c3per, c4ann, c4per, pastr, primf,
-    primn, range, secdf, secdn, 
-    urban,
+    c3ann, c3nfx, c3per, c4ann, pastr, primf, primn, secdf,
     cattle_density, goat_density, sheep_density,
     monthly_precip, monthly_precip_lag_1, monthly_precip_lag_2, monthly_precip_lag_3,
     cum_precip_3_months_prior,
@@ -64,7 +62,7 @@ d.test <- readRDS("saved_objects/d.test.rds")
 table(d.test$year, d.test$RVF_presence)
 
 # Divide the training data into folds
-d.folds <- group_vfold_cv(d.train, group = year_group)
+d.folds <- vfold_cv(d.train, v = 5, strata = "RVF_presence")
 saveRDS(d.folds, "saved_objects/d.folds.rds")
 d.folds <- readRDS("saved_objects/d.folds.rds")
 
@@ -113,7 +111,7 @@ xgb.grid <- grid_max_entropy(
   sample_prop(c(0.1, 0.9)),
   stop_iter(c(3L, 20L)),
   tree_depth(c(1L, 3L)),
-  trees(c(100L, 5000L)),
+  trees(c(10L, 1000L)),
   size = 250
 )
 
@@ -128,7 +126,7 @@ xgb.RVF.tune <- tune_grid(
   grid = xgb.grid
 )
 saveRDS(xgb.RVF.tune, "saved_objects/xgb.RVF.tune.rds")
-
+ 
 show_best(xgb.RVF.tune, metric = "roc_auc")
 autoplot(xgb.RVF.tune, metric = "roc_auc")
 
