@@ -34,6 +34,23 @@ load_country_map <- function() {
 
 
 
+# Function to load a country map of Kenya, Uganda, and Tanzania with admin
+# level 1 polygons
+
+load_country_map_adm <- function() {
+  
+  map <- rnaturalearth::ne_states(
+    country = c("Kenya", "United Republic of Tanzania", "Uganda"),
+    returnclass = "sf"
+  )
+  
+  map <- sf::st_transform(map, 4326)
+  
+  return(map)
+}
+
+
+
 # Function to crop and generate a resampled density raster starting from a 
 # count data raster
 
