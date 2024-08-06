@@ -178,3 +178,44 @@ for(var in variables) {
     units = "px"
   )
 }
+
+#==============================================================================
+
+
+# Load in the GCM temperature raster data and crop to the relevant 
+# country extents
+
+files <- list.files(
+  path = "data/rasters/temperature/GCMs"
+)
+
+# Loop through all files
+for(i in files) {
+  
+  # Import the raster
+  r <- rast(paste0("data/rasters/temperature/GCMs/", i))
+  
+  # Reproject the raster to EPSG 4326, if needed
+  if(crs(r, describe = TRUE)$code != "4326" | is.na(crs(r, describe = TRUE)$code)) {r <- project(x = r, y = "epsg:4326")}
+  
+  # Crop the raster
+  crop <- terra::crop(r, east.africa)
+  
+  # Rename the raster
+  names <- i %>%
+    str_replace("\\.tif", "") %>%
+    str_replace("2021-2040", "2030") %>%
+    str_replace("2041-2060", "2050")
+  names <- paste0(names, "-", months)
+  names(crop) <- names
+  
+  # Save the cropped rasters
+  for(name in names) {
+    
+    writeRaster(
+      crop[[name]], 
+      paste0("data/rasters/temperature/processed/", name, ".tif"),
+      overwrite = TRUE
+    )
+  }
+}
