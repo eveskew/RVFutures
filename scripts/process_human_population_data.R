@@ -100,7 +100,9 @@ ggsave(
 # Modify Wang et al. projected population data
 # https://www.nature.com/articles/s41597-022-01675-x
 
-years <- as.character(c(2025, 2030, 2035, 2040, 2045, 2050))
+years <- as.character(
+  c(2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2065, 2070)
+)
 east.africa <- load_country_map()
 x <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
 
@@ -190,7 +192,7 @@ for(i in years) {
 # Modify Boke-Olen et al. projected population data
 # https://www.nature.com/articles/sdata2016130
 
-years <- as.character(2001:2050)
+years <- as.character(2021:2050)
 east.africa <- load_country_map()
 x <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
 threshold = 0.015
