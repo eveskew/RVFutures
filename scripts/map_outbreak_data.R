@@ -14,9 +14,12 @@ source("R/functions.R")
 # Import background outlines of Kenya, Tanzania, and Uganda
 
 east.africa <- load_country_map()
+east.africa.adm <- load_country_map_adm()
 
 ggplot() + 
   geom_sf(data = east.africa)
+ggplot() + 
+  geom_sf(data = east.africa.adm)
 
 #==============================================================================
 
@@ -232,3 +235,23 @@ ggplot() +
   geom_sf(data = d, aes(size = CASES), color = alpha("darkred", 0.5)) +
   facet_wrap(~OB_Yr, nrow = 3) +
   theme_minimal()
+
+
+# Plot a map with admin level 1 outlines
+ggplot() +
+  geom_sf(
+    data = lakes,
+    fill = "cornflowerblue",
+    color = alpha("cornflowerblue", 0.9)
+  ) +
+  geom_sf(
+    data = east.africa.adm,
+    fill = NA,
+    linewidth = 0.5
+  ) +
+  geom_sf(data = d, aes(size = CASES), color = alpha("darkred", 0.5)) +
+  theme_void() +
+  theme(legend.position = "none")
+
+ggsave("outputs/outbreak_maps/RVF_outbreaks_admin1_map.jpg", 
+       width = x, height = x*1.4, units = "px")
