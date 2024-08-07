@@ -86,7 +86,7 @@ ggsave(
 # existing data and a linear projection method
 files <- list.files(
   path = "data/rasters/precipitation/processed",
-  pattern = "wc",
+  pattern = "prec_[0-9]{4}",
   full.names = TRUE
 )
 
@@ -133,7 +133,7 @@ for(month in months) {
 # raster stack with each month's data as a layer
 obs.files <- list.files(
   path = "data/rasters/precipitation/processed",
-  pattern = "wc",
+  pattern = "prec_[0-9]{4}",
   full.names = TRUE
 )
 proj.files <- list.files(
@@ -258,7 +258,8 @@ for(i in files) {
   names <- i %>%
     str_replace("\\.tif", "") %>%
     str_replace("2021-2040", "2030") %>%
-    str_replace("2041-2060", "2050")
+    str_replace("2041-2060", "2050") %>%
+    str_replace("2061-2080", "2070")
   names <- paste0(names, "-", months)
   names(crop) <- names
   
@@ -271,4 +272,72 @@ for(i in files) {
       overwrite = TRUE
     )
   }
+}
+
+#==============================================================================
+
+
+# Plot total precipitation over time for different SSP scenarios
+
+# Import historical observations and future projections
+files <- list.files(
+  path = "data/rasters/precipitation/processed",
+  full.names = TRUE
+)
+files <- files[!str_detect(files, "linear")]
+
+r <- rast(files)
+
+# Generate data frame to track changes in precipitation variables over time
+d <- data.frame(
+  year = as.numeric(str_extract(files, "[0-9]{4}")),
+  month = rep(months, times = 49),
+  type = ifelse(
+    is.na(str_extract(files, "ssp[0-9]{3}")), 
+    "Historical",
+    str_extract(files, "ssp[0-9]{3}")
+  ),
+  gcm = str_extract(files, "(?<=prec_)[^,]+(?=_ssp)"),
+  median_value = NA,
+  mean_value = NA,
+  total_value = NA
+)
+
+# Fill in the data frame
+values <- values(r)
+d$median_value <- apply(values, 2, median, na.rm = TRUE)
+d$mean_value <- apply(values, 2, mean, na.rm = TRUE)
+d$total_value <- apply(values, 2, sum, na.rm = TRUE)
+
+# Plot total precipitation values over time
+gcms <- d %>%
+  distinct(gcm) %>%
+  filter(!is.na(gcm)) %>%
+  pull(gcm)
+
+for(g in gcms) {
+  
+p <- d %>%
+  filter(gcm == g | is.na(gcm)) %>%
+  ggplot(aes(x = year, y = total_value, group = type, color = type)) +
+  geom_point() +
+  geom_line(linewidth = 0.2) +
+  geom_vline(xintercept = 2021, linetype = 2) +
+  xlab("") +
+  ylab("Total precipitation across study region") +
+  ggtitle(g) +
+  theme_minimal() +
+  theme(
+    panel.grid.minor = element_blank(),
+    legend.title = element_blank()
+  ) +
+  facet_wrap(~month)
+
+ggsave(
+  p,
+  filename = paste0("outputs/predictor_layers/precipitation", g, "_all_scenarios.jpg"),
+  width = 3000,
+  height = 2000,
+  units = "px"
+) 
 }
