@@ -77,10 +77,7 @@ r.crop[r.crop > 1000000] <- NA
 r.crop <- disagg(r.crop, fact = 6)
 r.crop <- crop(r.crop, east.africa)
 
-base.names <- c(
-  "c3ann", "c3nfx", "c3per", "c4ann", "c4per", "pastr", "primf",
-  "primn", "range", "secdf", "secdn", "secma", "secmb", "urban"
-)
+base.names <- unique(str_remove(names(r.crop), "_[1-9]..."))
 
 # Loop through years and generate raster files with all 14 variables from each
 # year
@@ -104,10 +101,18 @@ for(i in 1:length(years)) {
   )
 }
 
+file.remove(
+  list.files(
+    path = "data/rasters/land_cover/processed",
+    pattern = "json",
+    full.names = TRUE
+  )
+)
+
 #==============================================================================
 
 
-# For the years 2016-2050, load in LUH2 land cover raster data and crop to 
+# For the years 2016-2070, load in LUH2 land cover raster data and crop to 
 # relevant country extents for different SSP scenarios
 
 scenarios <- c("ssp126", "ssp245", "ssp585")
@@ -125,9 +130,9 @@ for(s in scenarios) {
   ext(r) <- c(-180, 180, -90, 90)
   crs(r) <- "+proj=longlat +datum=WGS84"
   
-  # Pull data from 2016-2050 (the file contains 14 variables and 86 years, those
+  # Pull data from 2016-2070 (the file contains 14 variables and 86 years, those
   # from from 2015-2100)
-  indexes <- as.character(2:36)
+  indexes <- as.character(2:56)
   pattern1 <- paste0("_", indexes, "$")
   pattern2 <- paste0(pattern1, collapse = "|")
   
@@ -148,7 +153,7 @@ for(s in scenarios) {
   
   # Loop through years and generate raster files with all 14 variables from each
   # year
-  years <- as.character(2016:2050)
+  years <- as.character(2016:2070)
   
   for(i in 1:length(years)) {
     
@@ -164,6 +169,14 @@ for(s in scenarios) {
     )
   }
 }
+
+file.remove(
+  list.files(
+    path = "data/rasters/land_cover/processed",
+    pattern = "json",
+    full.names = TRUE
+  )
+)
 
 #==============================================================================
 
@@ -229,7 +242,7 @@ assert_that(dim(r)[3] == 25)
 
 # Plot and save the land cover raster data
 p <- ggplot() +
-  geom_spatraster(data = as.factor(r)) +
+  geom_spatraster(data = as.factor(r), maxcell = 5000) +
   facet_wrap(~lyr) +
   theme_void()
 
@@ -245,7 +258,7 @@ ggsave(
   units = "px"
 )
 
-#==============================================================================
+ #==============================================================================
 
 
 # Generate plots for all land cover categories for the years 2000-2024
@@ -260,18 +273,13 @@ ssp245.files <- list.files(
   pattern = "SSP245",
   full.names = TRUE
 )
- files <- c(historical.files, ssp245.files) 
+files <- c(historical.files, ssp245.files)[1:25] 
 
 r <- rast(files)
-assert_that(dim(r)[3] == 14 * 51)
+assert_that(dim(r)[3] == 14 * 25)
 
 # Plot and save the land cover raster data
-lc.variables <- c(
-  "c3ann", "c3nfx", "c3per", "c4ann", "c4per", "pastr", "primf", 
-  "primn", "range", "secdf", "secdn", "secma", "secmb", "urban"
-)
-
-for(var in lc.variables) {
+for(var in base.names) {
   
   r.sub <- r %>%
     select(matches(var))
@@ -279,13 +287,13 @@ for(var in lc.variables) {
   assert_that(dim(r.sub)[3] == 25)
   
   p <- ggplot() +
-    geom_spatraster(data = r.sub) +
+    geom_spatraster(data = r.sub, maxcell = 5000) +
     facet_wrap(~lyr) +
     theme_void()
   
   ggsave(
     p,
-    filename = paste0("outputs/predictor_layers/land_cover_", variable, ".jpg"),
+    filename = paste0("outputs/predictor_layers/land_cover_", var, ".jpg"),
     width = 5000,
     height = 5000,
     units = "px"
@@ -305,27 +313,25 @@ files <- list.files(
 
 # Generate data frame to track changes in land cover variables over time
 d <- data.frame(
-  variable = rep(lc.variables, each = length(files)),
-  year = rep(as.numeric(str_extract(files, "[0-9]{4}")), times = length(lc.variables)),
+  variable = rep(base.names, each = length(files)),
+  year = rep(as.numeric(str_extract(files, "[0-9]{4}")), times = length(base.names)),
   type = rep(
     ifelse(
       is.na(str_extract(files, "SSP[0-9]{3}")), 
       "Historical",
       str_extract(files, "SSP[0-9]{3}")
     ),
-    times = length(lc.variables)
+    times = length(base.names)
   ),
   median_value = NA,
-  mean_value = NA,
-  min_value = NA,
-  max_value = NA
+  mean_value = NA
 )
 
 r <- rast(files)
 assert_that(dim(r)[3] == 14 * length(files))
 
 # Loop through all variables to fill in the data frame
-for(var in lc.variables) {
+for(var in base.names) {
   
   r.sub <- r %>%
     select(matches(var))
