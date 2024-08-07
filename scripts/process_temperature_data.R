@@ -101,9 +101,10 @@ for(var in variables) {
   
   files <- list.files(
     path = "data/rasters/temperature/processed",
-    pattern = var,
+    pattern = paste0("wc2.1_2.5m_", var),
     full.names = TRUE
   )
+  files <- files[str_detect(files, "[^0-9]_[0-9]")]
   
   r <- rast(files)
   assert_that(dim(r)[3] == 22 * 12)
@@ -150,6 +151,7 @@ for(var in variables) {
     pattern = paste0("wc2.1_2.5m_", var),
     full.names = TRUE
   )
+  obs.files <- obs.files[str_detect(obs.files, "[^0-9]_[0-9]")]
   proj.files <- list.files(
     path = "data/rasters/temperature/processed/",
     pattern = paste0("linear_projection_2.5min_", var),
@@ -173,7 +175,7 @@ for(var in variables) {
   ggsave(
     p,
     filename = paste0("outputs/predictor_layers/", var, "_projected.jpg"),
-    width = 6000,
+    width = 8000,
     height = 6000,
     units = "px"
   )
@@ -205,7 +207,8 @@ for(i in files) {
   names <- i %>%
     str_replace("\\.tif", "") %>%
     str_replace("2021-2040", "2030") %>%
-    str_replace("2041-2060", "2050")
+    str_replace("2041-2060", "2050") %>%
+    str_replace("2061-2080", "2070")
   names <- paste0(names, "-", months)
   names(crop) <- names
   
@@ -217,5 +220,77 @@ for(i in files) {
       paste0("data/rasters/temperature/processed/", name, ".tif"),
       overwrite = TRUE
     )
+  }
+}
+
+#==============================================================================
+
+
+# Plot mean temperatures over time for different SSP scenarios
+
+# Import historical observations and future projections
+files <- list.files(
+  path = "data/rasters/temperature/processed",
+  full.names = TRUE
+)
+files <- files[!str_detect(files, "linear")]
+
+r <- rast(files)
+
+# Generate data frame to track changes in precipitation variables over time
+d <- data.frame(
+  variable = str_extract(files, "(?<=2.5m_)[a-z]{4}(?=_)"),
+  year = as.numeric(str_extract(files, "[0-9]{4}")),
+  month = rep(months, times = 98),
+  type = ifelse(
+    is.na(str_extract(files, "ssp[0-9]{3}")), 
+    "Historical",
+    str_extract(files, "ssp[0-9]{3}")
+  ),
+  gcm = str_extract(files, "(?<=tm[a-z]{2}_)[^,]+(?=_ssp)"),
+  median_value = NA,
+  mean_value = NA
+)
+
+# Fill in the data frame
+values <- values(r)
+d$median_value <- apply(values, 2, median, na.rm = TRUE)
+d$mean_value <- apply(values, 2, mean, na.rm = TRUE)
+
+# Plot mean tmin and tmax values over time
+variables <- c("tmax", "tmin")
+gcms <- d %>%
+  distinct(gcm) %>%
+  filter(!is.na(gcm)) %>%
+  pull(gcm)
+
+for(var in variables) {
+  
+  for(g in gcms) {
+    
+    p <- d %>%
+      filter(variable == var) %>%
+      filter(gcm == g | is.na(gcm)) %>%
+      ggplot(aes(x = year, y = mean_value, group = type, color = type)) +
+      geom_point() +
+      geom_line(linewidth = 0.2) +
+      geom_vline(xintercept = 2021, linetype = 2) +
+      xlab("") +
+      ylab("Mean across study region") +
+      ggtitle(g) +
+      theme_minimal() +
+      theme(
+        panel.grid.minor = element_blank(),
+        legend.title = element_blank()
+      ) +
+      facet_wrap(~month)
+    
+    ggsave(
+      p,
+      filename = paste0("outputs/predictor_layers/", var, "_", g, "_all_scenarios.jpg"),
+      width = 3000,
+      height = 2000,
+      units = "px"
+    ) 
   }
 }

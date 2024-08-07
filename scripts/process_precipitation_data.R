@@ -317,27 +317,27 @@ gcms <- d %>%
 
 for(g in gcms) {
   
-p <- d %>%
-  filter(gcm == g | is.na(gcm)) %>%
-  ggplot(aes(x = year, y = total_value, group = type, color = type)) +
-  geom_point() +
-  geom_line(linewidth = 0.2) +
-  geom_vline(xintercept = 2021, linetype = 2) +
-  xlab("") +
-  ylab("Total precipitation across study region") +
-  ggtitle(g) +
-  theme_minimal() +
-  theme(
-    panel.grid.minor = element_blank(),
-    legend.title = element_blank()
-  ) +
-  facet_wrap(~month)
-
-ggsave(
-  p,
-  filename = paste0("outputs/predictor_layers/precipitation", g, "_all_scenarios.jpg"),
-  width = 3000,
-  height = 2000,
-  units = "px"
-) 
+  p <- d %>%
+    filter(gcm == g | is.na(gcm)) %>%
+    ggplot(aes(x = year, y = total_value, group = type, color = type)) +
+    geom_point() +
+    geom_line(linewidth = 0.2) +
+    geom_vline(xintercept = 2021, linetype = 2) +
+    xlab("") +
+    ylab("Total precipitation across study region") +
+    ggtitle(g) +
+    theme_minimal() +
+    theme(
+      panel.grid.minor = element_blank(),
+      legend.title = element_blank()
+    ) +
+    facet_wrap(~month)
+  
+  ggsave(
+    p,
+    filename = paste0("outputs/predictor_layers/precipitation", g, "_all_scenarios.jpg"),
+    width = 3000,
+    height = 2000,
+    units = "px"
+  ) 
 }
