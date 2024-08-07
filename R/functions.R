@@ -343,3 +343,70 @@ get_prediction_object <- function(model) {
       as.integer()
   )
 }
+
+
+
+# Function to generate summary "report" files for predictor flat files
+
+generate_predictor_report <- function(dataframe, type, filename) {
+  
+  # Pivot the predictor data frame into long format
+  d.long <- dataframe %>%
+    select(-grid_cell) %>%
+    tidyr::pivot_longer(
+      !matches("year|month$"),
+      names_to = "variable",
+      values_to = "value"
+    )
+  
+  # Summarize the predictor variables depending upon the type of predictor
+  # data
+  if(type == "static") {
+    
+    d.sum <- d.long %>%
+      group_by(variable) %>%
+      summarize(
+        min = min(value, na.rm = TRUE),
+        mean = mean(value, na.rm = TRUE),
+        max = max(value, na.rm = TRUE),
+        n_missing = sum(is.na(value)),
+        prop_missing = n_missing/n()
+      ) %>%
+      ungroup()
+  }
+  
+  if(type == "yearly") {
+    
+    d.sum <- d.long %>%
+      group_by(variable, year) %>%
+      summarize(
+        min = min(value, na.rm = TRUE),
+        mean = mean(value, na.rm = TRUE),
+        max = max(value, na.rm = TRUE),
+        n_missing = sum(is.na(value)),
+        prop_missing = n_missing/n()
+      ) %>%
+      ungroup()
+  }
+  
+  if(type == "monthly") {
+    
+    d.sum <- d.long %>%
+      group_by(variable, year, month) %>%
+      summarize(
+        min = min(value, na.rm = TRUE),
+        mean = mean(value, na.rm = TRUE),
+        max = max(value, na.rm = TRUE),
+        n_missing = sum(is.na(value)),
+        prop_missing = n_missing/n()
+      ) %>%
+      ungroup()
+  }
+  
+  # Round all numeric variables to make nicer output
+  d.sum <- d.sum %>%
+    mutate_if(is.numeric, round, digits = 3)
+  
+  # Save the report file
+  write_csv(d.sum, file = filename)
+}
