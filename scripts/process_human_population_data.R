@@ -195,7 +195,7 @@ for(i in years) {
 years <- as.character(2021:2050)
 east.africa <- load_country_map()
 x <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
-threshold = 0.015
+threshold <- 0.015
 
 # Loop through all years
 for(i in years) {
@@ -337,4 +337,55 @@ ggsave(
   height = 4000,
   units = "px"
 )
- 
+
+#==============================================================================
+
+
+# Plot total population counts over time for different SSP scenarios
+
+
+# Subset to observed WorldPop data and Wang et al. projections
+r.sub <- r %>% 
+  select(matches("pd|SSP1_|SSP2_|SSP5_"))
+
+names <- names(r.sub)
+
+# Generate data frame to track changes in population over time
+d <- data.frame(
+  year = as.numeric(str_extract(names, "[0-9]{4}")),
+  type = ifelse(
+    is.na(str_extract(names, "SSP[0-9]")), 
+    "Historical",
+    str_extract(names, "SSP[0-9]")
+  ),
+  total_population = NA
+)
+
+# Calculate total human population size in the study region
+d$total_population <- global(
+  r.sub * cellSize(r.sub, unit = "km"), 
+  "sum", na.rm = TRUE
+) %>%
+  pull(sum)
+
+# Plot
+p <- d %>%
+  ggplot(aes(x = year, y = total_population, group = type, color = type)) +
+  geom_point() +
+  geom_line(linewidth = 0.2) +
+  geom_vline(xintercept = 2020, linetype = 2) +
+  xlab("") +
+  ylab("Total human population across study region") +
+  theme_minimal() +
+  theme(
+    panel.grid.minor = element_blank(),
+    legend.title = element_blank()
+  )
+
+ggsave(
+  p,
+  filename = paste0("outputs/predictor_layers/human_population_all_scenarios.jpg"),
+  width = 3000,
+  height = 2000,
+  units = "px"
+) 
