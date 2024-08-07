@@ -586,7 +586,7 @@ for(g in gcms) {
     
     generate_predictor_report(
       dataframe = d,
-      type = "yearly",
+      type = "monthly",
       filename = paste0("data/predictor_reports/monthly_predictors_", g, "_", s, ".csv")
     )
   }
