@@ -297,8 +297,8 @@ for(s in scenarios) {
 #==============================================================================
 
 
-# Generate flat file for monthly predictors (so need grid cells, years, and
-# months)
+# Generate flat file for historical monthly weather predictors 
+# (so need grid cells, years, and months)
 
 n.cells <- 413 * 301
 years <- 2007:2022
@@ -441,12 +441,130 @@ d <- d %>%
 
 # Write monthly predictor data to disk
 
-write_csv(d, "data/predictor_flat_files/monthly_predictors_historical.csv")
+write_csv(d, "data/predictor_flat_files/monthly_predictors_historical_weather.csv")
 
 generate_predictor_report(
   dataframe = d,
   type = "monthly",
-  filename = "data/predictor_reports/monthly_predictors_historical.csv"
+  filename = "data/predictor_reports/monthly_predictors_historical_weather.csv"
+)
+
+#==============================================================================
+
+
+# Generate flat file for historical monthly climate predictors 
+# (so need grid cells and months)
+
+n.cells <- 413 * 301
+n.months <- 12
+
+d <- data.frame(
+  month = rep(month.name, each = n.cells),
+  grid_cell = rep(1:n.cells, times = n.months)
+)
+
+
+# Add precipitation data to the data frame
+
+# Load in precipitation raster files
+files <- list.files(
+  path = "data/rasters/precipitation/processed",
+  pattern = "1970-2000",
+  full.names = TRUE
+)
+
+files
+
+r <- rast(files)
+
+d$monthly_precip <- NA
+
+for(month in month.name) {
+  
+  # Subset to the correct raster layer
+  layer <- r[[paste0("wc2.1_2.5m_prec_1970-2000-", month.table[month])]]
+  
+  # Extract values
+  d[d$month == month, "monthly_precip"] <- as.numeric(values(layer))
+}
+
+
+# Add temperature data to the data frame
+
+# Load in temperature raster files
+files <- list.files(
+  path = "data/rasters/temperature/processed",
+  pattern = "1970-2000",
+  full.names = TRUE
+)
+
+files
+
+r <- rast(files)
+
+d$monthly_tmax <- NA
+d$monthly_tmin <- NA
+  
+for(month in month.name) {
+  
+  # Subset to the correct raster layer for tmax
+  layer <- r[[paste0("wc2.1_2.5m_tmax_1970-2000-", month.table[month])]]
+  
+  # Extract values
+  d[d$month == month, "monthly_tmax"] <- as.numeric(values(layer))
+  
+  # Subset to the correct raster layer for tmin
+  layer <- r[[paste0("wc2.1_2.5m_tmin_1970-2000-", month.table[month])]]
+  
+  # Extract values
+  d[d$month == month, "monthly_tmin"] <- as.numeric(values(layer))
+}
+
+
+# Calculate lagged values for monthly variables
+
+# Duplicate the data so there is something to calculate lags from
+d <- d %>%
+  rbind(d) %>%
+  mutate(year = rep(c(1, 2), each = n()/2))
+
+d <- d %>%
+  # convert month to a factor variable for sorting
+  mutate(month = factor(month, levels = month.name)) %>%
+  # arrange by grid cell, year, and month to get a time series of each
+  # cell's values
+  arrange(grid_cell, year, month) %>%
+  group_by(grid_cell) %>%
+  # perform lagged variable calculations on the per-cell level
+  mutate(
+    monthly_tmax_lag_1 = lag(monthly_tmax, n = 1),
+    monthly_tmax_lag_2 = lag(monthly_tmax, n = 2),
+    monthly_tmax_lag_3 = lag(monthly_tmax, n = 3),
+    
+    monthly_tmin_lag_1 = lag(monthly_tmin, n = 1),
+    monthly_tmin_lag_2 = lag(monthly_tmin, n = 2),
+    monthly_tmin_lag_3 = lag(monthly_tmin, n = 3),
+    
+    monthly_precip_lag_1 = lag(monthly_precip, n = 1),
+    monthly_precip_lag_2 = lag(monthly_precip, n = 2),
+    monthly_precip_lag_3 = lag(monthly_precip, n = 3),
+    
+    cum_precip_3_months_prior = 
+      monthly_precip_lag_1 + monthly_precip_lag_2 + monthly_precip_lag_3
+  ) %>%
+  ungroup() %>%
+  filter(year == 2) %>%
+  select(-year)
+
+
+# Write monthly predictor data to disk
+
+write_csv(d, "data/predictor_flat_files/monthly_predictors_historical_climate.csv")
+
+generate_predictor_report(
+  dataframe = d,
+  type = "monthly_climate",
+  filename = "data/predictor_reports/monthly_predictors_historical_climate.csv"
 )
 
 #==============================================================================

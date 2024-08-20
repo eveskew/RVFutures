@@ -403,6 +403,20 @@ generate_predictor_report <- function(dataframe, type, filename) {
       ungroup()
   }
   
+  if(type == "monthly_climate") {
+    
+    d.sum <- d.long %>%
+      group_by(variable, month) %>%
+      summarize(
+        min = min(value, na.rm = TRUE),
+        mean = mean(value, na.rm = TRUE),
+        max = max(value, na.rm = TRUE),
+        n_missing = sum(is.na(value)),
+        prop_missing = n_missing/n()
+      ) %>%
+      ungroup()
+  }
+  
   # Round all numeric variables to make nicer output
   d.sum <- d.sum %>%
     mutate_if(is.numeric, round, digits = 3)
