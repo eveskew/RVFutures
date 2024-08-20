@@ -8,20 +8,20 @@ source("R/functions.R")
 #==============================================================================
 
 
-# For all files, load in the temperature raster data and crop to the
+# Load in the temperature historical weather data and crop to the
 # relevant country extents
 
 east.africa <- load_country_map()
 
 files <- list.files(
-  path = "data/rasters/temperature/WorldClim"
+  path = "data/rasters/temperature/WorldClim_historical_weather"
 )
 
 # Loop through all files
 for(i in files) {
   
   # Import the raster
-  r <- rast(paste0("data/rasters/temperature/WorldClim/", i))
+  r <- rast(paste0("data/rasters/temperature/WorldClim_historical_weather/", i))
   
   # Reproject the raster to EPSG 4326, if needed
   if(crs(r, describe = TRUE)$code != "4326" | is.na(crs(r, describe = TRUE)$code)) {r <- project(x = r, y = "epsg:4326")}
@@ -47,6 +47,41 @@ for(i in files) {
 #==============================================================================
 
 
+# Load in the temperature historical climate data and crop to the relevant 
+# country extents
+
+files <- list.files(
+  path = "data/rasters/temperature/WorldClim_historical_climate"
+)
+
+# Loop through all files
+for(i in files) {
+  
+  # Import the raster
+  r <- rast(paste0("data/rasters/temperature/WorldClim_historical_climate/", i))
+  
+  # Reproject the raster to EPSG 4326, if needed
+  if(crs(r, describe = TRUE)$code != "4326" | is.na(crs(r, describe = TRUE)$code)) {r <- project(x = r, y = "epsg:4326")}
+  
+  # Crop the raster
+  crop <- terra::crop(r, east.africa)
+  
+  # Rename the raster
+  names(crop) <- i %>% 
+    str_replace("\\.tif", "") %>%
+    str_replace("tmin_", "tmin_1970-2000-") %>%
+    str_replace("tmax_", "tmax_1970-2000-")
+  
+  writeRaster(
+    crop, 
+    paste0("data/rasters/temperature/processed/", names(crop), ".tif"),
+    overwrite = TRUE
+  )
+}
+
+#==============================================================================
+
+
 # Load in the cropped temperature raster data, effectively getting a 
 # raster stack with each month's data as a layer
 variables <- c("tmax", "tmin")
@@ -55,7 +90,7 @@ for(var in variables) {
   
   files <- list.files(
     path = "data/rasters/temperature/processed",
-    pattern = "wc.*200[8-9]|wc.*201[0-9]|wc.*202[0-3]",
+    pattern = "wc.*_200[8-9]|wc.*_201[0-9]|wc.*_202[0-3]",
     full.names = TRUE
   )
   files <- files[str_detect(files, var)]
@@ -101,10 +136,9 @@ for(var in variables) {
   
   files <- list.files(
     path = "data/rasters/temperature/processed",
-    pattern = paste0("wc2.1_2.5m_", var),
+    pattern = paste0("wc2.1_2.5m_", var, "_2"),
     full.names = TRUE
   )
-  files <- files[str_detect(files, "[^0-9]_[0-9]")]
   
   r <- rast(files)
   assert_that(dim(r)[3] == 22 * 12)
@@ -148,10 +182,9 @@ for(var in variables) {
   
   obs.files <- list.files(
     path = "data/rasters/temperature/processed",
-    pattern = paste0("wc2.1_2.5m_", var),
+    pattern = paste0("wc2.1_2.5m_", var, "_2"),
     full.names = TRUE
   )
-  obs.files <- obs.files[str_detect(obs.files, "[^0-9]_[0-9]")]
   proj.files <- list.files(
     path = "data/rasters/temperature/processed/",
     pattern = paste0("linear_projection_2.5min_", var),
@@ -184,18 +217,18 @@ for(var in variables) {
 #==============================================================================
 
 
-# Load in the GCM temperature raster data and crop to the relevant 
+# Load in the temperature future climate data and crop to the relevant 
 # country extents
 
 files <- list.files(
-  path = "data/rasters/temperature/GCMs"
+  path = "data/rasters/temperature/WorldClim_future_climate"
 )
 
 # Loop through all files
 for(i in files) {
   
   # Import the raster
-  r <- rast(paste0("data/rasters/temperature/GCMs/", i))
+  r <- rast(paste0("data/rasters/temperature/WorldClim_future_climate/", i))
   
   # Reproject the raster to EPSG 4326, if needed
   if(crs(r, describe = TRUE)$code != "4326" | is.na(crs(r, describe = TRUE)$code)) {r <- project(x = r, y = "epsg:4326")}
@@ -233,7 +266,7 @@ files <- list.files(
   path = "data/rasters/temperature/processed",
   full.names = TRUE
 )
-files <- files[!str_detect(files, "linear")]
+files <- files[!str_detect(files, "linear|1970-2000")]
 
 r <- rast(files)
 
