@@ -21,7 +21,7 @@ r <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
 
 static.predictors <- read_csv("data/predictor_flat_files/static_predictors.csv")
 yearly.predictors <- read_csv("data/predictor_flat_files/yearly_predictors_historical.csv")
-monthly.predictors <- read_csv("data/predictor_flat_files/monthly_predictors_historical.csv")
+monthly.predictors <- read_csv("data/predictor_flat_files/monthly_predictors_historical_weather.csv")
 
 
 # Import outbreak/absence data and add on predictors

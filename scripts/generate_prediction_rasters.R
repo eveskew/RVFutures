@@ -24,7 +24,7 @@ full.training.fit <- extract_workflow(xgb.RVF.final)
 
 static.predictors <- read_csv("data/predictor_flat_files/static_predictors.csv")
 yearly.predictors <- read_csv("data/predictor_flat_files/yearly_predictors_historical.csv")
-monthly.predictors <- read_csv("data/predictor_flat_files/monthly_predictors_historical.csv")
+monthly.predictors <- read_csv("data/predictor_flat_files/monthly_predictors_historical_weather.csv")
 
 # Loop through years
 
