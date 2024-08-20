@@ -8,20 +8,20 @@ source("R/functions.R")
 #==============================================================================
 
 
-# Load in the raw precipitation raster data and crop to the relevant 
+# Load in the precipitation historical weather data and crop to the relevant 
 # country extents
 
 east.africa <- load_country_map()
 
 files <- list.files(
-  path = "data/rasters/precipitation/WorldClim"
+  path = "data/rasters/precipitation/WorldClim_historical_weather"
 )
 
 # Loop through all files
 for(i in files) {
   
   # Import the raster
-  r <- rast(paste0("data/rasters/precipitation/WorldClim/", i))
+  r <- rast(paste0("data/rasters/precipitation/WorldClim_historical_weather/", i))
   
   # Reproject the raster to EPSG 4326, if needed
   if(crs(r, describe = TRUE)$code != "4326" | is.na(crs(r, describe = TRUE)$code)) {r <- project(x = r, y = "epsg:4326")}
@@ -47,12 +47,47 @@ for(i in files) {
 #==============================================================================
 
 
+# Load in the precipitation historical climate data and crop to the relevant 
+# country extents
+
+files <- list.files(
+  path = "data/rasters/precipitation/WorldClim_historical_climate",
+  pattern = ".tif$"
+)
+
+# Loop through all files
+for(i in files) {
+  
+  # Import the raster
+  r <- rast(paste0("data/rasters/precipitation/WorldClim_historical_climate/", i))
+  
+  # Reproject the raster to EPSG 4326, if needed
+  if(crs(r, describe = TRUE)$code != "4326" | is.na(crs(r, describe = TRUE)$code)) {r <- project(x = r, y = "epsg:4326")}
+  
+  # Crop the raster
+  crop <- terra::crop(r, east.africa)
+  
+  # Rename the raster
+  names(crop) <- i %>% 
+    str_replace("\\.tif", "") %>%
+    str_replace("prec_", "prec_1970-2000-")
+  
+  writeRaster(
+    crop, 
+    paste0("data/rasters/precipitation/processed/", names(crop), ".tif"),
+    overwrite = TRUE
+  )
+}
+
+#==============================================================================
+
+
 # Load in the cropped precipitation raster data, making sure to only grab the
 # cropped raw data files. Effectively, we'll get a raster stack with each 
 # month's data as a layer
 files <- list.files(
   path = "data/rasters/precipitation/processed",
-  pattern = "wc.*200[8-9]|wc.*201[0-9]|wc.*202[0-3]",
+  pattern = "wc.*_200[8-9]|wc.*_201[0-9]|wc.*_202[0-3]",
   full.names = TRUE
 )
 
@@ -83,10 +118,10 @@ ggsave(
 
 
 # Generate future projections of precipitation on a by-month basis using the
-# existing data and a linear projection method
+# existing weather data and a linear projection method
 files <- list.files(
   path = "data/rasters/precipitation/processed",
-  pattern = "prec_[0-9]{4}",
+  pattern = "wc.*_200[0-9]|wc.*_201[0-9]|wc.*_202[0-3]",
   full.names = TRUE
 )
 
@@ -133,7 +168,7 @@ for(month in months) {
 # raster stack with each month's data as a layer
 obs.files <- list.files(
   path = "data/rasters/precipitation/processed",
-  pattern = "prec_[0-9]{4}",
+  pattern = "wc.*_200[0-9]|wc.*_201[0-9]|wc.*_202[0-3]",
   full.names = TRUE
 )
 proj.files <- list.files(
@@ -235,18 +270,18 @@ test.dat[23:49, ]
 #==============================================================================
 
 
-# Load in the GCM precipitation raster data and crop to the relevant 
+# Load in the precipitation future climate data and crop to the relevant 
 # country extents
 
 files <- list.files(
-  path = "data/rasters/precipitation/GCMs"
+  path = "data/rasters/precipitation/WorldClim_future_climate"
 )
 
 # Loop through all files
 for(i in files) {
   
   # Import the raster
-  r <- rast(paste0("data/rasters/precipitation/GCMs/", i))
+  r <- rast(paste0("data/rasters/precipitation/WorldClim_future_climate/", i))
   
   # Reproject the raster to EPSG 4326, if needed
   if(crs(r, describe = TRUE)$code != "4326" | is.na(crs(r, describe = TRUE)$code)) {r <- project(x = r, y = "epsg:4326")}
@@ -284,7 +319,7 @@ files <- list.files(
   path = "data/rasters/precipitation/processed",
   full.names = TRUE
 )
-files <- files[!str_detect(files, "linear")]
+files <- files[!str_detect(files, "linear|1970-2000")]
 
 r <- rast(files)
 
@@ -301,7 +336,10 @@ d <- data.frame(
   median_value = NA,
   mean_value = NA,
   total_value = NA
-)
+) %>%
+  mutate(
+    type = str_replace(type, "ssp", "SSP"),
+  )
 
 # Fill in the data frame
 values <- values(r)
@@ -319,12 +357,12 @@ for(g in gcms) {
   
   p <- d %>%
     filter(gcm == g | is.na(gcm)) %>%
-    ggplot(aes(x = year, y = total_value, group = type, color = type)) +
+    ggplot(aes(x = year, y = mean_value, group = type, color = type)) +
     geom_point() +
     geom_line(linewidth = 0.2) +
     geom_vline(xintercept = 2021, linetype = 2) +
     xlab("") +
-    ylab("Total precipitation across study region") +
+    ylab("Mean precipitation across study region") +
     ggtitle(g) +
     theme_minimal() +
     theme(
@@ -335,7 +373,7 @@ for(g in gcms) {
   
   ggsave(
     p,
-    filename = paste0("outputs/predictor_layers/precipitation", g, "_all_scenarios.jpg"),
+    filename = paste0("outputs/predictor_layers/precipitation_", g, "_all_scenarios.jpg"),
     width = 3000,
     height = 2000,
     units = "px"
