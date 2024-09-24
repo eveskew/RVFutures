@@ -120,6 +120,11 @@ for(i in years) {
     pattern = paste0(i, ".tif$"),
     full.names = TRUE
   )
+  file.ssp3 <- list.files(
+    path = "data/rasters/human_population/SPP3", 
+    pattern = paste0(i, ".tif$"),
+    full.names = TRUE
+  )
   file.ssp5 <- list.files(
     path = "data/rasters/human_population/SPP5", 
     pattern = paste0(i, ".tif$"),
@@ -129,11 +134,13 @@ for(i in years) {
   # Import the rasters
   r.ssp1 <- terra::rast(file.ssp1)
   r.ssp2 <- terra::rast(file.ssp2)
+  r.ssp3 <- terra::rast(file.ssp3)
   r.ssp5 <- terra::rast(file.ssp5)
   
   # Reproject the rasters to EPSG 4326, if needed
   if(crs(r.ssp1, describe = TRUE)$code != "4326" | is.na(crs(r.ssp1, describe = TRUE)$code)) {r.ssp1 <- project(x = r.ssp1, y = "epsg:4326")}
   if(crs(r.ssp2, describe = TRUE)$code != "4326" | is.na(crs(r.ssp2, describe = TRUE)$code)) {r.ssp2 <- project(x = r.ssp2, y = "epsg:4326")}
+  if(crs(r.ssp3, describe = TRUE)$code != "4326" | is.na(crs(r.ssp3, describe = TRUE)$code)) {r.ssp3 <- project(x = r.ssp3, y = "epsg:4326")}
   if(crs(r.ssp5, describe = TRUE)$code != "4326" | is.na(crs(r.ssp5, describe = TRUE)$code)) {r.ssp5 <- project(x = r.ssp5, y = "epsg:4326")}
   
   # Crop and resample from count to density raster, 
@@ -154,6 +161,16 @@ for(i in years) {
   r.tot.count <- global(r.ssp2.crop, "sum", na.rm = TRUE)
   r.r.tot.count <- global(
     r.ssp2.resample * cellSize(r.ssp2.resample, unit = "km"), 
+    "sum", na.rm = TRUE
+  )
+  assert_that(0.99 < (r.tot.count/r.r.tot.count) & 1.01 > (r.tot.count/r.r.tot.count))
+  
+  r.ssp3.crop <- crop(r.ssp3, east.africa)
+  r.ssp3.resample <- resample_count_raster(r.ssp3.crop, east.africa, x)
+  
+  r.tot.count <- global(r.ssp3.crop, "sum", na.rm = TRUE)
+  r.r.tot.count <- global(
+    r.ssp3.resample * cellSize(r.ssp3.resample, unit = "km"), 
     "sum", na.rm = TRUE
   )
   assert_that(0.99 < (r.tot.count/r.r.tot.count) & 1.01 > (r.tot.count/r.r.tot.count))
@@ -180,102 +197,13 @@ for(i in years) {
     overwrite = TRUE
   )
   writeRaster(
+    r.ssp3.resample, 
+    paste0("data/rasters/human_population/processed/SSP3_2.5min_", i, ".tif"),
+    overwrite = TRUE
+  )
+  writeRaster(
     r.ssp5.resample, 
     paste0("data/rasters/human_population/processed/SSP5_2.5min_", i, ".tif"),
-    overwrite = TRUE
-  )
-}
-
-#==============================================================================
-
-
-# Modify Boke-Olen et al. projected population data
-# https://www.nature.com/articles/sdata2016130
-
-years <- as.character(2021:2050)
-east.africa <- load_country_map()
-x <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
-threshold <- 0.015
-
-# Loop through all years
-for(i in years) {
-  
-  # Pull raster file names for that year
-  file.ssp126 <- list.files(
-    path = "data/rasters/human_population/african-future-population_SSP1-RCP2.6_2000-01-01_2100-12-31_1year_original", 
-    pattern = paste0(i, ".tif$"),
-    full.names = TRUE
-  )
-  file.ssp245 <- list.files(
-    path = "data/rasters/human_population/african-future-population_SSP2-RCP4.5_2000-01-01_2100-12-31_1year_original", 
-    pattern = paste0(i, ".tif$"),
-    full.names = TRUE
-  )
-  file.ssp585 <- list.files(
-    path = "data/rasters/human_population/african-future-population_SSP5-RCP8.5_2000-01-01_2100-12-31_1year_original", 
-    pattern = paste0(i, ".tif$"),
-    full.names = TRUE
-  )
-  
-  # Import the rasters
-  r.ssp126 <- terra::rast(file.ssp126)
-  r.ssp245 <- terra::rast(file.ssp245)
-  r.ssp585 <- terra::rast(file.ssp585)
-  
-  # Reproject the rasters to EPSG 4326, if needed
-  if(crs(r.ssp126, describe = TRUE)$code != "4326" | is.na(crs(r.ssp126, describe = TRUE)$code)) {r.ssp126 <- project(x = r.ssp126, y = "epsg:4326")}
-  if(crs(r.ssp245, describe = TRUE)$code != "4326" | is.na(crs(r.ssp245, describe = TRUE)$code)) {r.ssp245 <- project(x = r.ssp245, y = "epsg:4326")}
-  if(crs(r.ssp585, describe = TRUE)$code != "4326" | is.na(crs(r.ssp585, describe = TRUE)$code)) {r.ssp585 <- project(x = r.ssp585, y = "epsg:4326")}
-  
-  # Crop and resample from count to density raster, 
-  # checking that the total population counts are preserved
-  r.ssp126.crop <- crop(r.ssp126, east.africa)
-  r.ssp126.resample <- resample_count_raster(r.ssp126.crop, east.africa, x, threshold = threshold)
-  names(r.ssp126.resample) <- paste0("SSP126_", i)
-  
-  r.tot.count <- global(r.ssp126.crop, "sum", na.rm = TRUE)
-  r.r.tot.count <- global(
-    r.ssp126.resample * cellSize(r.ssp126.resample, unit = "km"), 
-    "sum", na.rm = TRUE
-  )
-  assert_that((1 - threshold) < (r.tot.count/r.r.tot.count) & (1 + threshold) > (r.tot.count/r.r.tot.count))
-  
-  r.ssp245.crop <- crop(r.ssp245, east.africa)
-  r.ssp245.resample <- resample_count_raster(r.ssp245.crop, east.africa, x, threshold = threshold)
-  names(r.ssp245.resample) <- paste0("SSP245_", i)
-  
-  r.tot.count <- global(r.ssp245.crop, "sum", na.rm = TRUE)
-  r.r.tot.count <- global(
-    r.ssp245.resample * cellSize(r.ssp245.resample, unit = "km"), 
-    "sum", na.rm = TRUE
-  )
-  assert_that(0.99 < (r.tot.count/r.r.tot.count) & 1.01 > (r.tot.count/r.r.tot.count))
-  
-  r.ssp585.crop <- crop(r.ssp585, east.africa)
-  r.ssp585.resample <- resample_count_raster(r.ssp585.crop, east.africa, x, threshold = threshold)
-  names(r.ssp585.resample) <- paste0("SSP585_", i)
-  
-  r.tot.count <- global(r.ssp585.crop, "sum", na.rm = TRUE)
-  r.r.tot.count <- global(
-    r.ssp585.resample * cellSize(r.ssp585.resample, unit = "km"), 
-    "sum", na.rm = TRUE
-  )
-  assert_that(0.99 < (r.tot.count/r.r.tot.count) & 1.01 > (r.tot.count/r.r.tot.count))
-  
-  # Save the merged raster files
-  writeRaster(
-    r.ssp126.resample, 
-    paste0("data/rasters/human_population/processed/SSP126_2.5min_", i, ".tif"),
-    overwrite = TRUE
-  )
-  writeRaster(
-    r.ssp245.resample, 
-    paste0("data/rasters/human_population/processed/SSP245_2.5min_", i, ".tif"),
-    overwrite = TRUE
-  )
-  writeRaster(
-    r.ssp585.resample, 
-    paste0("data/rasters/human_population/processed/SSP585_2.5min_", i, ".tif"),
     overwrite = TRUE
   )
 }
@@ -346,7 +274,7 @@ ggsave(
 
 # Subset to observed WorldPop data and Wang et al. projections
 r.sub <- r %>% 
-  select(matches("pd|SSP1_|SSP2_|SSP5_"))
+  select(matches("pd|SSP1_|SSP2_|SSP3_|SSP5_"))
 
 names <- names(r.sub)
 

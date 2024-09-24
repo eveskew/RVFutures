@@ -115,7 +115,7 @@ file.remove(
 # For the years 2016-2070, load in LUH2 land cover raster data and crop to 
 # relevant country extents for different SSP scenarios
 
-scenarios <- c("ssp126", "ssp245", "ssp585")
+scenarios <- c("ssp126", "ssp245", "ssp370", "ssp585")
 
 for(s in scenarios) {
   
