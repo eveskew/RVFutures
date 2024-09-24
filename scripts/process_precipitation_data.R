@@ -326,7 +326,7 @@ r <- rast(files)
 # Generate data frame to track changes in precipitation variables over time
 d <- data.frame(
   year = as.numeric(str_extract(files, "[0-9]{4}")),
-  month = rep(months, times = 49),
+  month = rep(months, times = 121),
   type = ifelse(
     is.na(str_extract(files, "ssp[0-9]{3}")), 
     "Historical",
@@ -363,6 +363,7 @@ for(g in gcms) {
     geom_vline(xintercept = 2021, linetype = 2) +
     xlab("") +
     ylab("Mean precipitation across study region") +
+    ylim(0, 300) +
     ggtitle(g) +
     theme_minimal() +
     theme(
@@ -373,7 +374,7 @@ for(g in gcms) {
   
   ggsave(
     p,
-    filename = paste0("outputs/predictor_layers/precipitation_", g, "_all_scenarios.jpg"),
+    filename = paste0("outputs/predictor_layers/precipitation_", g, ".jpg"),
     width = 3000,
     height = 2000,
     units = "px"
