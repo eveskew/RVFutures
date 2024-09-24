@@ -206,7 +206,7 @@ n.cells <- 413 * 301
 years <- c(2030, 2050, 2070)
 n.years <- length(years)
 
-scenarios <- c("SSP126", "SSP245", "SSP585")
+scenarios <- c("SSP126", "SSP245", "SSP370")
 
 for(s in scenarios) {
   
@@ -577,8 +577,12 @@ years <- c(2029, 2030, 2049, 2050, 2069, 2070)
 n.years <- length(years)
 n.months <- 12
 
-gcms <- c("HadGEM3-GC31-LL", "IPSL-CM6A-LR", "MIROC6")
-scenarios <- c("SSP126", "SSP245", "SSP585")
+gcms <- c(
+  "ACCESS-CM2", "BCC-CSM2-MR", "CMCC-ESM2", "EC-Earth3-Veg", 
+  "GISS-E2-1-G", "INM-CM5-0", "IPSL-CM6A-LR", "MIROC6",
+  "MPI-ESM1-2-HR", "MRI-ESM2-0", "UKESM1-0-LL"
+)
+scenarios <- c("SSP126", "SSP245", "SSP370")
 
 for(g in gcms) {
   
