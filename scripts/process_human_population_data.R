@@ -11,7 +11,7 @@ source("R/functions.R")
 # For all years, load in human population density raster data from 
 # Kenya, Uganda, and Tanzania, then merge and save the merged raster file
 
-years <- as.character(2001:2020)
+years <- as.character(2000:2020)
 x <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
 
 # Loop through all years
@@ -24,6 +24,8 @@ for(i in years) {
     full.names = TRUE
   )
   
+  # Actually data from 12 countries total, including those that border our
+  # focal area
   assert_that(length(files) == 12)
   
   # Combine the rasters
@@ -73,7 +75,7 @@ files <- list.files(
 )
 
 r <- rast(files)
-assert_that(dim(r)[3] == 20)
+assert_that(dim(r)[3] == 21)
 
 # Plot and save the human population raster data
 p <- ggplot() +
@@ -90,7 +92,7 @@ ggsave(
   p,
   filename = "outputs/predictor_layers/human_population.jpg",
   width = 4000,
-  height = 4000,
+  height = 5000,
   units = "px"
 )
 
@@ -213,12 +215,14 @@ for(i in years) {
 
 # Generate linear projections of future human population density
 
-first.data.year <- 2001
+first.data.year <- 2000
 
 # Regress across the years
 x <- regress(r, 1:nlyr(r), na.rm = TRUE)
 
 # Generate predictor layers for 2021-2050 and save them
+# Predictions beyond 2050 will begin to throw errors given large value warnings
+# built into the "generate_raster_projection()" function
 for(year in 2021:2050) {
   
   writeRaster(
@@ -249,7 +253,7 @@ r <- rast(files)
 # Display various future projections of human population density
 r.sub <- r %>% 
   select(matches("2025|2030|2035|2040|2045|2050")) %>%
-  select(matches("linear|SSP1_|SSP2_|SSP5_"))
+  select(matches("linear|SSP1_|SSP2_|SSP3_"))
 
 # Plot and save the human population raster data
 p <- ggplot() +
