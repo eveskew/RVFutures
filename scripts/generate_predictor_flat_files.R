@@ -97,11 +97,15 @@ d$sheep_density <- as.numeric(values(r))
 
 write_csv(d, "data/predictor_flat_files/static_predictors.csv")
 
+filename <- "data/predictor_reports/static_predictors.csv"
+
 generate_predictor_report(
   dataframe = d,
   type = "static",
-  filename = "data/predictor_reports/static_predictors.csv"
+  filename = filename
 )
+
+max(read_csv(filename)$prop_missing)
 
 #==============================================================================
 
@@ -109,7 +113,7 @@ generate_predictor_report(
 # Generate flat file for yearly predictors (so need grid cells and years)
 
 n.cells <- 413 * 301
-years <- 2008:2022
+years <- 2000:2022
 n.years <- length(years)
 
 d <- data.frame(
@@ -191,11 +195,15 @@ for(year in years) {
 
 write_csv(d, "data/predictor_flat_files/yearly_predictors_historical.csv")
 
+filename <- "data/predictor_reports/yearly_predictors_historical.csv"
+
 generate_predictor_report(
   dataframe = d,
   type = "yearly",
-  filename = "data/predictor_reports/yearly_predictors_historical.csv"
+  filename = filename
 )
+
+max(read_csv(filename)$prop_missing)
 
 #==============================================================================
 
@@ -287,11 +295,15 @@ for(s in scenarios) {
   
   write_csv(d, paste0("data/predictor_flat_files/yearly_predictors_", s, ".csv"))
   
+  filename <- paste0("data/predictor_reports/yearly_predictors_", s, ".csv")
+  
   generate_predictor_report(
     dataframe = d,
     type = "yearly",
-    filename = paste0("data/predictor_reports/yearly_predictors_", s, ".csv")
+    filename = filename
   )
+  
+  print(max(read_csv(filename)$prop_missing))
 }
 
 #==============================================================================
@@ -443,11 +455,15 @@ d <- d %>%
 
 write_csv(d, "data/predictor_flat_files/monthly_predictors_historical_weather.csv")
 
+filename <- "data/predictor_reports/monthly_predictors_historical_weather.csv"
+
 generate_predictor_report(
   dataframe = d,
   type = "monthly",
-  filename = "data/predictor_reports/monthly_predictors_historical_weather.csv"
+  filename = filename
 )
+
+max(read_csv(filename)$prop_missing)
 
 #==============================================================================
 
@@ -561,11 +577,15 @@ d <- d %>%
 
 write_csv(d, "data/predictor_flat_files/monthly_predictors_historical_climate.csv")
 
+filename <- "data/predictor_reports/monthly_predictors_historical_climate.csv"
+
 generate_predictor_report(
   dataframe = d,
   type = "monthly_climate",
-  filename = "data/predictor_reports/monthly_predictors_historical_climate.csv"
+  filename = filename
 )
+
+max(read_csv(filename)$prop_missing)
 
 #==============================================================================
 
@@ -706,10 +726,14 @@ for(g in gcms) {
     
     write_csv(d, paste0("data/predictor_flat_files/monthly_predictors_", g, "_", s, ".csv"))
     
+    filename <- paste0("data/predictor_reports/monthly_predictors_", g, "_", s, ".csv")
+    
     generate_predictor_report(
       dataframe = d,
       type = "monthly",
-      filename = paste0("data/predictor_reports/monthly_predictors_", g, "_", s, ".csv")
+      filename = filename
     )
+    
+    print(max(read_csv(filename)$prop_missing))
   }
 }
