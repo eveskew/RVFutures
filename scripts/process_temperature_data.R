@@ -266,7 +266,7 @@ files <- list.files(
   path = "data/rasters/temperature/processed",
   full.names = TRUE
 )
-files <- files[!str_detect(files, "linear|1970-2000")]
+files <- files[!str_detect(files, "linear")]
 
 r <- rast(files)
 
@@ -274,16 +274,20 @@ r <- rast(files)
 d <- data.frame(
   variable = str_extract(files, "(?<=2.5m_)[a-z]{4}(?=_)"),
   year = as.numeric(str_extract(files, "[0-9]{4}")),
-  month = rep(months, times = 242),
-  type = ifelse(
-    is.na(str_extract(files, "ssp[0-9]{3}")), 
-    "Historical",
-    str_extract(files, "ssp[0-9]{3}")
-  ),
+  month = rep(months, times = 244),
   gcm = str_extract(files, "(?<=tm[a-z]{2}_)[^,]+(?=_ssp)"),
   median_value = NA,
   mean_value = NA
-)
+) %>%
+  mutate(
+    year = ifelse(year == 1970, 1985, year),
+    type = case_when(
+      year == 1985 ~ "Historical climate",
+      year %in% 2000:2023 ~ "Historical weather",
+      year %in% c(2030, 2050, 2070) ~ str_extract(files, "ssp[0-9]{3}")
+    ),
+    type = str_replace(type, "ssp", "SSP")
+  )
 
 # Fill in the data frame
 values <- values(r)
@@ -310,12 +314,14 @@ for(var in variables) {
       geom_vline(xintercept = 2021, linetype = 2) +
       xlab("") +
       ylab("Mean across study region") +
+      xlim(1980, 2080) +
       ylim(14, 34) +
       ggtitle(g) +
       theme_minimal() +
       theme(
         panel.grid.minor = element_blank(),
-        legend.title = element_blank()
+        legend.title = element_blank(),
+        legend.position = "bottom"
       ) +
       facet_wrap(~month)
     

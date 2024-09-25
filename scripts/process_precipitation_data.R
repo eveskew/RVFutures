@@ -319,25 +319,26 @@ files <- list.files(
   path = "data/rasters/precipitation/processed",
   full.names = TRUE
 )
-files <- files[!str_detect(files, "linear|1970-2000")]
+files <- files[!str_detect(files, "linear")]
 
 r <- rast(files)
 
 # Generate data frame to track changes in precipitation variables over time
 d <- data.frame(
   year = as.numeric(str_extract(files, "[0-9]{4}")),
-  month = rep(months, times = 121),
-  type = ifelse(
-    is.na(str_extract(files, "ssp[0-9]{3}")), 
-    "Historical",
-    str_extract(files, "ssp[0-9]{3}")
-  ),
+  month = rep(months, times = 122),
   gcm = str_extract(files, "(?<=prec_)[^,]+(?=_ssp)"),
   median_value = NA,
   mean_value = NA,
   total_value = NA
 ) %>%
   mutate(
+    year = ifelse(year == 1970, 1985, year),
+    type = case_when(
+      year == 1985 ~ "Historical climate",
+      year %in% 2000:2023 ~ "Historical weather",
+      year %in% c(2030, 2050, 2070) ~ str_extract(files, "ssp[0-9]{3}")
+    ),
     type = str_replace(type, "ssp", "SSP"),
   )
 
@@ -363,12 +364,14 @@ for(g in gcms) {
     geom_vline(xintercept = 2021, linetype = 2) +
     xlab("") +
     ylab("Mean precipitation across study region") +
+    xlim(1980, 2080) +
     ylim(0, 300) +
     ggtitle(g) +
     theme_minimal() +
     theme(
       panel.grid.minor = element_blank(),
-      legend.title = element_blank()
+      legend.title = element_blank(),
+      legend.position = "bottom"
     ) +
     facet_wrap(~month)
   
