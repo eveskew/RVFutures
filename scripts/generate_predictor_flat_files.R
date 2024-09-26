@@ -448,7 +448,10 @@ d <- d %>%
     cum_precip_3_months_prior = 
       monthly_precip_lag_1 + monthly_precip_lag_2 + monthly_precip_lag_3
   ) %>%
-  ungroup()
+  ungroup() %>%
+  # remove the year 2007 as this was only included to generate lagged variables
+  # for 2008
+  filter(year != 2007)
 
 
 # Write monthly predictor data to disk

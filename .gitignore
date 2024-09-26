@@ -2,9 +2,13 @@
 .Rhistory
 .Rproj.user
 
-*.csv
 *.jpeg
-data/
+data/collated_data/
+data/lookup_tables/
+data/outbreak_data/
+data/prediction_rasters/
+data/predictor_flat_files
+data/rasters/
 documents/
 outputs/
 saved_objects/
