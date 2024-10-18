@@ -226,7 +226,7 @@ length(unique(data$cell))
 
 # Remove rows when the number of samples is less than 20
 count <- data.frame(sort(table(data$cell)))
-count.sub <- subset(count, Freq > 4)
+count.sub <- subset(count, Freq > 19)
 colnames(count.sub) <- c("cell", "Freq")
 data.sub <- merge(x = data, y = count.sub, by = "cell", all = TRUE)
 data.sub <- subset(data.sub, !is.na(Freq))
