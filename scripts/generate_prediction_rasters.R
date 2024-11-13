@@ -26,6 +26,9 @@ static.predictors <- read_csv("data/predictor_flat_files/static_predictors.csv")
 yearly.predictors <- read_csv("data/predictor_flat_files/yearly_predictors_historical.csv")
 monthly.predictors <- read_csv("data/predictor_flat_files/monthly_predictors_historical_weather.csv")
 
+# For retrodictions, set travel time to healthcare to 0
+static.predictors$travel_time_to_healthcare <- rep(0, nrow(static.predictors))
+
 # Loop through years
 
 for(year in c(2008:2021)) {
@@ -90,6 +93,9 @@ for(year in c(2008:2021)) {
 static.predictors <- read_csv("data/predictor_flat_files/static_predictors.csv")
 yearly.predictors <- read_csv("data/predictor_flat_files/yearly_predictors_historical.csv")
 monthly.predictors <- read_csv("data/predictor_flat_files/monthly_predictors_historical_climate.csv")
+
+# For climate scenario predictions, set travel time to healthcare to 0
+static.predictors$travel_time_to_healthcare <- rep(0, nrow(static.predictors))
 
 # Import a raster to serve as a template
 r <- terra::rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
@@ -229,3 +235,102 @@ for(g in gcms) {
     }
   }
 }
+
+#==============================================================================
+
+
+# Generate prediction raster summary table
+
+
+east.africa <- load_country_map()
+
+# Calculate accuracy on the test data
+
+pred.object <- get_prediction_object(xgb.RVF.final)
+
+# Extract values
+true.negatives <- unlist(pred.object@tn)
+false.positives <- unlist(pred.object@fp)
+false.negatives <- unlist(pred.object@fn)
+true.positives <- unlist(pred.object@tp)
+
+# Calculate TNR, TPR, and TSS
+true.negative.rate <- true.negatives / (true.negatives + false.positives)
+true.positive.rate <- true.positives / (true.positives + false.negatives)
+tss <- true.positive.rate + true.negative.rate - 1
+
+# Look at model predictions using the TSS cutoff
+max(tss)
+max.tss.index <- which(tss == max(tss))
+tss.cutoff <- unlist(pred.object@cutoffs)[max.tss.index]
+true.negative.rate[max.tss.index]
+true.positive.rate[max.tss.index]
+tss.based.preds <- ifelse(unlist(pred.object@predictions) >= tss.cutoff, 1, 0)
+
+
+# Import all prediction rasters and process
+
+files <- list.files(
+  path = "data/prediction_rasters",
+  full.names = TRUE
+)
+
+# Generate masked raster
+r.mask <- mask(rast(files), east.africa)
+
+# Generate thresholded, masked raster
+r.threshold <- r.mask >= tss.cutoff
+
+# Generate scaled raster
+min <- min(minmax(r.mask))
+max <- max(minmax(r.mask))
+rescale <- function(x) {(x - min) / (max - min)}
+r.rescale <- rescale(r.mask)
+assertthat::assert_that(min(minmax(r.rescale)) == 0)
+assertthat::assert_that(max(minmax(r.rescale)) == 1)
+
+
+# Set up prediction raster summary table
+
+year.vec <- as.numeric(str_extract(names(r.mask), "[0-9]{4}"))
+
+prediction.raster.summary <- data.frame(
+  index = 1:nlyr(r.mask),
+  lyr = names(r.mask),
+  year = year.vec,
+  month = rep(month.name, times = length(year.vec)/12)
+) %>%
+  mutate(
+    month = factor(month, levels = month.name),
+    date_char = paste0(year, "-", month.abb[month], "-15"),
+    date = as.Date(date_char, format = "%Y-%B-%d"),
+    data_type = ifelse(
+      grepl("SSP|historical_climate", lyr),
+      "climate",
+      "weather"
+    ),
+    time_period = ifelse(
+      is.na(str_extract(lyr, "SSP[0-9]{3}")), 
+      "historical",
+      "future"
+    ),
+    gcm = str_extract(lyr, "[^,]+(?=_SSP)"),
+    scenario = str_extract(lyr, "SSP[0-9]{3}")
+  )
+
+assertthat::assert_that(nrow(prediction.raster.summary) == dim(r.mask)[3])
+
+prediction.raster.summary$mean_prob_mask <- 
+  unlist(global(r.mask, "mean", na.rm = TRUE))
+prediction.raster.summary$mean_prob_rescale <- 
+  unlist(global(r.rescale, "mean", na.rm = TRUE))
+prediction.raster.summary$prop_suitable <- 
+  unlist(global(r.threshold, fun = "sum", na.rm = TRUE) / global(r.threshold, fun = "notNA"))
+
+
+# Save prediction raster summary table
+
+write_csv(
+  prediction.raster.summary, 
+  file = "data/prediction_raster_summary.csv"
+)
