@@ -232,6 +232,7 @@ data.sub <- merge(x = data, y = count.sub, by = "cell", all = TRUE)
 data.sub <- subset(data.sub, !is.na(Freq))
 
 length(unique(data.sub$cell))
+table(data.sub$country, useNA = "ifany")
 
 # Summarize serology by cell and age
 SiteByAge <- data.sub %>%
