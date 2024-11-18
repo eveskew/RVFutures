@@ -332,5 +332,5 @@ prediction.raster.summary$prop_suitable <-
 
 write_csv(
   prediction.raster.summary, 
-  file = "data/prediction_raster_summary.csv"
+  file = "data/misc/prediction_raster_summary.csv"
 )
