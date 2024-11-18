@@ -26,6 +26,9 @@ ssps.upper <- toupper(ssps)
 
 years <- c("2030", "2050", "2070")
 
+month.character <- c("01", "02", "03", "04", "05", "06", "07", "08", "09",
+                     "10", "11", "12")
+
 #==============================================================================
 
 
@@ -68,9 +71,10 @@ for(gcm in gcms) {
         geom_spatraster(data = delta) +
         geom_sf(data = east.africa, fill = NA) +
         scale_fill_gradient2(
-          low = "darkblue", mid = "white", high = "darkred",
-          na.value = "lightgray",
-          limits = c(-0.45, 0.45)
+          low = "darkblue", mid = "floralwhite", high = "darkred",
+          na.value = "white",
+          limits = c(-0.5, 0.5),
+          name = "Change\nin RVF\nlikelihood\nrelative to\nhistorical\nbaseline"
         ) +
         ggtitle(paste(gcm, ssp, year, sep = ", ")) +
         theme_void() +
@@ -86,6 +90,20 @@ for(gcm in gcms) {
         height = 10,
         width = 10
       )
+      
+      # Save rasters
+      for(i in 1:12) {
+        
+        writeRaster(
+          delta[[i]], 
+          paste0(
+            "data/prediction_deltas/", 
+            paste(gcm, ssp, year, month.character[i], sep = "_"), 
+            ".tif"
+          ), 
+          overwrite = TRUE
+        )
+      }
     }
   }
 }
@@ -123,9 +141,10 @@ for(ssp in ssps.upper) {
       geom_spatraster(data = delta) +
       geom_sf(data = east.africa, fill = NA) +
       scale_fill_gradient2(
-        low = "darkblue", mid = "white", high = "darkred",
-        na.value = "lightgray",
-        limits = c(-0.45, 0.45)
+        low = "darkblue", mid = "floralwhite", high = "darkred",
+        na.value = "white",
+        name = "Change\nin RVF\nlikelihood\nrelative to\nhistorical\nbaseline",
+        limits = c(-0.5, 0.5)
       ) +
       ggtitle(paste("GCM Ensemble", ssp, year, sep = ", ")) +
       theme_void() +
@@ -141,6 +160,20 @@ for(ssp in ssps.upper) {
       height = 10,
       width = 10
     )
+    
+    # Save rasters
+    for(i in 1:12) {
+      
+      writeRaster(
+        delta[[i]], 
+        paste0(
+          "data/prediction_deltas/", 
+          paste("GCM-Ensemble", ssp, year, month.character[i], sep = "_"), 
+          ".tif"
+        ), 
+        overwrite = TRUE
+      )
+    }
   }
 }
 
@@ -188,11 +221,12 @@ for(ssp in ssps) {
       geom_spatraster(data = delta) +
       geom_sf(data = east.africa, fill = NA) +
       scale_fill_gradient2(
-        low = "darkred", mid = "white", high = "darkblue",
-        na.value = "lightgray",
+        low = "darkred", mid = "floralwhite", high = "darkblue",
+        na.value = "white",
+        name = "Change in\nprecipitation\nrelative to\nhistorical\nbaseline",
         limits = c(-120, 120)
       ) +
-      ggtitle(paste("GCM Ensemble", ssp, year, sep = ", ")) +
+      ggtitle(paste("GCM Ensemble", toupper(ssp), year, sep = ", ")) +
       theme_void() +
       facet_wrap(~lyr)
     
@@ -253,17 +287,84 @@ for(ssp in ssps) {
       geom_spatraster(data = delta) +
       geom_sf(data = east.africa, fill = NA) +
       scale_fill_gradient(
-        low = "white", high = "darkred",
-        na.value = "lightgray",
-        limits = c(0, 4)
+        low = "floralwhite", high = "darkred",
+        na.value = "white",
+        limits = c(0, 4),
+        name = "Change\nin monthly\nmax temp\nrelative to\nhistorical\nbaseline"
       ) +
-      ggtitle(paste("GCM Ensemble", ssp, year, sep = ", ")) +
+      ggtitle(paste("GCM Ensemble", toupper(ssp), year, sep = ", ")) +
       theme_void() +
       facet_wrap(~lyr)
     
     ggsave(
       filename = paste0(
         "outputs/deltas/tmax_GCM_ensemble_", 
+        paste(ssp, year, sep = "_"),
+        ".jpg"
+      ),
+      plot = p,
+      height = 10,
+      width = 10
+    )
+  }
+}
+
+#==============================================================================
+
+
+# Generate delta plots showing differences between tmin for 
+# historical climates and ensemble future climate scenarios
+
+all.files <- list.files(
+  path = "data/rasters/temperature/processed",
+  pattern = "tmin",
+  full.names = TRUE
+)
+
+# Generate a 12-stack raster of monthly tmin for historical climate
+files <- all.files[str_detect(all.files, "1970")]
+assert_that(length(files) == 12)
+hist.clim <- mask(rast(files), east.africa)
+
+for(ssp in ssps) {
+  
+  print(ssp)
+  
+  for(year in years) {
+    
+    print(year)
+    
+    files <- all.files[str_detect(all.files, paste(ssp, year, sep = "_"))]
+    assert_that(length(files) == 12*11)
+    
+    ensemble <- tapp(
+      mask(rast(files), east.africa), 
+      index = rep(1:12, times = 11),
+      fun = "mean"
+    )
+    
+    delta <- ensemble - hist.clim
+    names(delta) <- month.name
+    
+    print(paste0("Minimum delta: ", min(minmax(delta))))
+    print(paste0("Maximum delta: ", max(minmax(delta))))
+    
+    p <- ggplot() +
+      geom_spatraster(data = delta) +
+      geom_sf(data = east.africa, fill = NA) +
+      scale_fill_gradient(
+        low = "floralwhite", high = "darkred",
+        na.value = "white",
+        limits = c(0, 4),
+        name = "Change\nin monthly\nmin temp\nrelative to\nhistorical\nbaseline"
+      ) +
+      ggtitle(paste("GCM Ensemble", toupper(ssp), year, sep = ", ")) +
+      theme_void() +
+      facet_wrap(~lyr)
+    
+    ggsave(
+      filename = paste0(
+        "outputs/deltas/tmin_GCM_ensemble_", 
         paste(ssp, year, sep = "_"),
         ".jpg"
       ),
