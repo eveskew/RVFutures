@@ -36,10 +36,12 @@ files <- list.files(
 
 # Subset to 2008-2020 (the period of observed data)
 files <- files[str_detect(files, paste(as.character(2008:2020), collapse = "|"))]
+assertthat::assert_that(length(files) == 13)
 
-# Import these rasters and take the mean
+# Import these rasters, mask, and calculate the mean
 r <- terra::rast(files)
-r.mean <- mean(r, na.rm = FALSE)
+r.mask <- mask(r, east.africa)
+r.mean <- mean(r.mask, na.rm = TRUE)
 
 #==============================================================================
 
@@ -50,7 +52,7 @@ r.mean <- mean(r, na.rm = FALSE)
 a <- d.popweighted.sf %>%
   filter(RVF_presence == 0) %>%
   ggplot() +
-  geom_sf(data = east.africa, fill = "white") +
+  geom_sf(data = east.africa, fill = "floralwhite") +
   geom_sf(data = lakes.10, fill = "lightblue") +
   geom_sf(color = alpha("gray", 0.1), size = 0.5) +
   theme_void() +
@@ -63,11 +65,8 @@ b <- ggplot() +
   geom_spatraster(data = r.mean) +
   geom_sf(data = east.africa, fill = NA) +
   geom_sf(data = lakes.10, fill = "lightblue") +
-  scale_fill_viridis_c(trans = "log10", na.value = "white") +
-  theme_void() +
-  theme(
-    legend.title = element_blank()
-  )
+  scale_fill_viridis_c(trans = "log10", na.value = "white", name = "Human\npopulation\ndensity") +
+  theme_void()
 
 plot_grid(
   a, b,
