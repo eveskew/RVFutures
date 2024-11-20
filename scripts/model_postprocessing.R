@@ -62,6 +62,9 @@ tss.based.preds <- ifelse(unlist(pred.object@predictions) >= tss.cutoff, 1, 0)
 
 table(d.test$RVF_presence, tss.based.preds)
 
+# Save TSS cutoff value
+saveRDS(tss.cutoff, "data/misc/tss.cutoff.rds")
+
 #==============================================================================
 
 
@@ -89,7 +92,6 @@ vi <- xgb.RVF.final %>%
 # Plot variable importance values for the top 10 most important predictors
 vi %>%
   arrange(desc(Importance)) %>%
-  slice_head(n = 10) %>%
   mutate(variable_nice_name = factor(variable_nice_name)) %>%
   ggplot(
     aes(
@@ -120,7 +122,7 @@ vi %>%
 
 ggsave(
   "outputs/figures/vi.jpg",
-  width = 8, height = 6
+  width = 8, height = 12
 )
 
 #==============================================================================
@@ -135,28 +137,57 @@ explainer <- explain_tidymodels(
   verbose = FALSE
 )
 
+# Generate partial dependence plot object for all predictors
 pdp <- model_profile(
   explainer,
-  variables = c(
-    "travel_time_to_healthcare",
-    "goat_density",
-    "monthly_precip", "monthly_precip_lag_2",
-    "dist_to_river_10", "dist_to_lake_10",
-    "phh2o_0-5cm_mean", "silt_0-5cm_mean",
-    "monthly_tmax_lag_3",
-    "elevation"
-  ),
-  N = 500
+  variables = vi$Variable,
+  N = 1000
 )
 
-plot(
-  pdp, 
-  title = "", 
-  subtitle = "",
-  facet_ncol = 3
+# Modify data within the pdp object so that plots will be generated in order
+# of variable importance
+pdp$agr_profiles <- pdp$agr_profiles %>%
+  left_join(
+    .,
+    read_csv("data/lookup_tables/variable_lookup_table.csv"),
+    by = c("_vname_" = "variable")
+  )
+pdp$agr_profiles$`_vname_` <- pdp$agr_profiles$variable_nice_name
+pdp$agr_profiles$`_vname_` <- factor(pdp$agr_profiles$`_vname_`, levels = vi$variable_nice_name)
+pdp$color <- "black"
+
+# Loop through subsets of the predictor variables so that we get separate 
+# plots with reasonable numbers of facets
+vars.list <- list(
+  1:10, 11:20, 21:30, 31:34
 )
 
-ggsave(
-  "outputs/figures/pdp.jpg",
-  width = 9, height = 12
-)
+for(i in 1:length(vars.list)) {
+  
+  # Identify variables to be plotted
+  vars <- vi$variable_nice_name[vars.list[[i]]]
+  
+  # Reduce pdp object to these variables
+  pdp.reduced <- pdp
+  pdp.reduced$agr_profiles <- pdp.reduced$agr_profiles[pdp.reduced$agr_profiles$`_vname_` %in% vars, ]
+  
+  # Generate plot
+  p <- plot(
+    pdp.reduced, 
+    title = "", 
+    subtitle = "",
+    facet_ncol = 2
+  )
+  p <- p +
+    ylim(0, 0.01) +
+    theme(
+      strip.text.x = element_text(size = 11)
+    )
+  
+  # Save plot
+  ggsave(
+    p,
+    filename = paste0("outputs/figures/pdp", i, ".jpg"),
+    width = 7, height = length(vars)
+  )
+}
