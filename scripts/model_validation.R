@@ -294,7 +294,7 @@ for(i in 1:length(cells)) {
 #==============================================================================
 
 
-# Add RVF likelihood predictions to the dataframe
+# Add RVF likelihood predictions to the data frame
 
 years <- 2008:2021
 
@@ -337,8 +337,8 @@ df %>%
     linetype = 2,
     se = FALSE
   ) +
-  xlab("Mean grid cell-level RVF relative likelihood from 2008-2021") +
-  ylab("Estimated grid cell-level RVFV FOI") +
+  xlab("Mean relative likelihood of RVF from 2008-2021") +
+  ylab("Estimated RVFV FOI") +
   guides(size = guide_legend(title = "Number of tests")) +
   theme_minimal() +
   theme(
