@@ -15,6 +15,7 @@ source("R/functions.R")
 
 east.africa <- load_country_map()
 east.africa.adm <- load_country_map_adm()
+east.africa.box <- st_as_sfc(st_bbox(east.africa))
 
 ggplot() + 
   geom_sf(data = east.africa)
@@ -27,6 +28,13 @@ ggplot() +
 # Import hydrology data 
 lakes <- readRDS("data/rasters/hydrology/saved_objects/lakes_east_africa_5.rds")
 rivers <- readRDS("data/rasters/hydrology/saved_objects/rivers_east_africa.rds")
+oceans <- rnaturalearth::ne_download(
+  category = "physical",
+  type = "ocean",
+  scale = "medium"
+) %>%
+  st_transform(4326)
+oceans <- st_crop(oceans, east.africa)
 
 # Generate a new variable in the data frame to be used to plot the width
 # of rivers of different flow orders. The "m" variable is a multiplier to
@@ -63,13 +71,23 @@ alpha.values <- c(
 
 ggplot() +
   geom_sf(
-    data = east.africa, 
+    data = east.africa.box,
+    fill = "floralwhite",
+    linewidth = NA
+  ) +
+  geom_sf(
+    data = east.africa,
     fill = alpha("darkseagreen", 0.2)
+  ) +
+  geom_sf(
+    data = oceans,
+    fill = "cornflowerblue",
+    linewidth = NA
   ) +
   geom_sf(
     data = lakes,
     fill = "cornflowerblue",
-    color = alpha("cornflowerblue", 0.9)
+    linewidth = NA
   ) +
   geom_sf(
     data = rivers,
@@ -79,7 +97,9 @@ ggplot() +
   ) +
   scale_alpha_manual(values = alpha.values) +
   theme_void() +
-  theme(legend.position = "none")
+  theme(
+    legend.position = "none"
+  )
 
 #==============================================================================
 
@@ -154,8 +174,8 @@ x <- 2000
 # Plot a map with the elevation and hydrology layers
 ggplot() +
   geom_sf(
-    data = east.africa,
-    fill = "white",
+    data = east.africa.box,
+    fill = "floralwhite",
     linewidth = NA
   ) +
   geom_spatraster(
@@ -164,9 +184,14 @@ ggplot() +
   ) +
   scale_fill_hypso_tint_c(breaks = cuts) +
   geom_sf(
+    data = oceans,
+    fill = "cornflowerblue",
+    linewidth = NA
+  ) +
+  geom_sf(
     data = lakes,
     fill = "cornflowerblue",
-    color = alpha("cornflowerblue", 0.9)
+    linewidth = NA
   ) +
   geom_sf(
     data = rivers,
@@ -191,8 +216,9 @@ ggsave("outputs/outbreak_maps/RVF_outbreaks_elevation_hydro_map.jpg",
 # Plot a map with the hillshade, elevation, and hydrology layers
 ggplot() +
   geom_sf(
-    data = east.africa,
-    fill = "white"
+    data = east.africa.box,
+    fill = "floralwhite",
+    linewidth = NA
   ) +
   geom_spatraster(
     data = hill.multi,
@@ -206,9 +232,14 @@ ggplot() +
   ) +
   scale_fill_hypso_tint_c(breaks = cuts) +
   geom_sf(
+    data = oceans,
+    fill = "cornflowerblue",
+    linewidth = NA
+  ) +
+  geom_sf(
     data = lakes,
     fill = "cornflowerblue",
-    color = alpha("cornflowerblue", 0.9)
+    linewidth = NA
   ) +
   geom_sf(
     data = rivers,
@@ -242,7 +273,7 @@ ggplot() +
   geom_sf(
     data = lakes,
     fill = "cornflowerblue",
-    color = alpha("cornflowerblue", 0.9)
+    linewidth = NA
   ) +
   geom_sf(
     data = east.africa.adm,
