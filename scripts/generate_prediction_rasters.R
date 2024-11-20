@@ -243,29 +243,7 @@ for(g in gcms) {
 
 
 east.africa <- load_country_map()
-
-# Calculate accuracy on the test data
-
-pred.object <- get_prediction_object(xgb.RVF.final)
-
-# Extract values
-true.negatives <- unlist(pred.object@tn)
-false.positives <- unlist(pred.object@fp)
-false.negatives <- unlist(pred.object@fn)
-true.positives <- unlist(pred.object@tp)
-
-# Calculate TNR, TPR, and TSS
-true.negative.rate <- true.negatives / (true.negatives + false.positives)
-true.positive.rate <- true.positives / (true.positives + false.negatives)
-tss <- true.positive.rate + true.negative.rate - 1
-
-# Look at model predictions using the TSS cutoff
-max(tss)
-max.tss.index <- which(tss == max(tss))
-tss.cutoff <- unlist(pred.object@cutoffs)[max.tss.index]
-true.negative.rate[max.tss.index]
-true.positive.rate[max.tss.index]
-tss.based.preds <- ifelse(unlist(pred.object@predictions) >= tss.cutoff, 1, 0)
+tss.cutoff <- readRDS("data/misc/tss.cutoff.rds")
 
 
 # Import all prediction rasters and process

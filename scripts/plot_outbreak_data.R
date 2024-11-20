@@ -209,7 +209,7 @@ ggplot() +
   theme_void() +
   theme(legend.position = "none")
 
-ggsave("outputs/outbreak_maps/RVF_outbreaks_elevation_hydro_map.jpg", 
+ggsave("outputs/figures/RVF_outbreaks_elevation_hydro_map.jpg", 
        width = x, height = x*1.4, units = "px")
 
 
@@ -257,7 +257,7 @@ ggplot() +
   theme_void() +
   theme(legend.position = "none")
 
-ggsave("outputs/outbreak_maps/RVF_outbreaks_hillshade_elevation_hydro_map.jpg", 
+ggsave("outputs/figures/RVF_outbreaks_hillshade_elevation_hydro_map.jpg", 
        width = x, height = x*1.4, units = "px")
 
 
@@ -284,5 +284,5 @@ ggplot() +
   theme_void() +
   theme(legend.position = "none")
 
-ggsave("outputs/outbreak_maps/RVF_outbreaks_admin1_map.jpg", 
+ggsave("outputs/figures/RVF_outbreaks_admin1_map.jpg", 
        width = x, height = x*1.4, units = "px")
