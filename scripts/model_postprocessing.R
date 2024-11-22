@@ -85,7 +85,7 @@ vi <- xgb.RVF.final %>%
   vi(type = "gain") %>%
   left_join(
     .,
-    read_csv("data/lookup_tables/variable_lookup_table.csv"),
+    read_csv("data/misc/variable_lookup_table.csv"),
     by = c("Variable" = "variable")
   )
 
@@ -149,7 +149,7 @@ pdp <- model_profile(
 pdp$agr_profiles <- pdp$agr_profiles %>%
   left_join(
     .,
-    read_csv("data/lookup_tables/variable_lookup_table.csv"),
+    read_csv("data/misc/variable_lookup_table.csv"),
     by = c("_vname_" = "variable")
   )
 pdp$agr_profiles$`_vname_` <- pdp$agr_profiles$variable_nice_name

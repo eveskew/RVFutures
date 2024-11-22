@@ -1,0 +1,49 @@
+variable,variable_nice_name,variable_group
+bdod_0-5cm_mean,bulk density,soils
+cattle_density,cattle density,livestock density
+cec_0-5cm_mean,cation exchange capacity,soils
+cfvo_0-5cm_mean,volumetric fraction of coarse fragments,soils
+clay_0-5cm_mean,proportion of clay particles,soils
+cum_precip_3_months_prior,cumulative precipitation (3 months prior),precipitation
+dist_to_lake_1,dist. to lake (> 1 km^2),proximity to water
+dist_to_lake_10,dist. to lake (> 10 km^2),proximity to water
+dist_to_lake_5,dist. to lake (> 5 km^2),proximity to water
+dist_to_lake_all,dist. to lake (any size),proximity to water
+dist_to_river_10,dist. to river (> 10 m^3/s),proximity to water
+elevation,elevation,topography
+goat_density,goat density,livestock density
+human_pop,human population density,human density
+monthly_precip,monthly precipitation (month of event),precipitation
+monthly_precip_lag_1,monthly precipitation (1 month prior),precipitation
+monthly_precip_lag_2,monthly precipitation (2 months prior),precipitation
+monthly_precip_lag_3,monthly precipitation (3 months prior),precipitation
+monthly_tmax,monthly max temperature (month of event),temperature
+monthly_tmax_lag_1,monthly max temperature (1 month prior),temperature
+monthly_tmax_lag_2,monthly max temperature (2 months prior),temperature
+monthly_tmax_lag_3,monthly max temperature (3 months prior),temperature
+monthly_tmin,monthly min temperature (month of event),temperature
+monthly_tmin_lag_1,monthly min temperature (1 month prior),temperature
+monthly_tmin_lag_2,monthly min temperature (2 months prior),temperature
+monthly_tmin_lag_3,monthly min temperature (3 months prior),temperature
+nitrogen_0-5cm_mean,total nitrogen,soils
+phh2o_0-5cm_mean,pH,soils
+sand_0-5cm_mean,proportion of sand particles,soils
+sheep_density,sheep density,livestock density
+silt_0-5cm_mean,proportion of silt particles,soils
+slope,slope,topography
+soc_0-5cm_mean,organic carbon content,soils
+travel_time_to_healthcare,travel time to healthcare,disease detection
+c3ann,C3 annual crops,land use
+c3nfx,C3 nitrogen-fixing crops,land use
+c3per,C3 perennial crops,land use
+c4ann,C4 annual crops,land use
+c4per,C4 perennial crops,land use
+pastr,managed pasture,land use
+primf,forested primary land,land use
+primn,non-forested primary land,land use
+range,rangeland,land use
+secdf,potentially forested secondary land,land use
+secdn,potentially non-forested secondary land,land use
+secma,secondary mean age,land use
+secmb,secondary mean biomass density,land use
+urban,urban land,land use

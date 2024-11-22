@@ -3,12 +3,12 @@
 .Rproj.user
 
 *.jpeg
-data/collated_data/
-data/lookup_tables/
 data/outbreak_data/
+data/prediction_deltas/
 data/prediction_rasters/
 data/predictor_flat_files
 data/rasters/
+data/serology_data/
 documents/
 outputs/
 saved_objects/

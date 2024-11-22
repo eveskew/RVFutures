@@ -17,7 +17,7 @@ source("R/functions.R")
 east.africa <- load_country_map()
 
 # Import shapefile for use with Cook et al. data
-s <- st_read("data/collated_data/Cook_etal_2017/Ken_Sublocations/")
+s <- st_read("data/serology_data/Cook_etal_2017/Ken_Sublocations/")
 st_crs(s) <- st_crs(east.africa)$proj4string
 
 # Import collated human RVF serology data
@@ -28,7 +28,7 @@ col.types <- c(
   "text", "text"
 )
 d <- readxl::read_xlsx(
-  "data/collated_data/East_Africa_RVF_data_human_Evan.7.9.xlsx",
+  "data/serology_data/East_Africa_RVF_data_human_Evan.7.9.xlsx",
   col_types = col.types, na = "NA"
 )
 colnames(d) <- c(
@@ -160,7 +160,7 @@ length(unique(d2$cell))
 
 # Write the data to disk
 
-write_csv(d2, "data/collated_data/East_Africa_RVF_data_human_w_cells.csv")
+write_csv(d2, "data/serology_data/East_Africa_RVF_data_human_w_cells.csv")
 
 #==============================================================================
 
