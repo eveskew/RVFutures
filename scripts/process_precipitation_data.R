@@ -334,6 +334,7 @@ d <- data.frame(
 ) %>%
   mutate(
     year = ifelse(year == 1970, 1985, year),
+    month = factor(month.name[as.numeric(month)], levels = month.name),
     type = case_when(
       year == 1985 ~ "Historical climate",
       year %in% 2000:2023 ~ "Historical weather",
@@ -354,6 +355,9 @@ gcms <- d %>%
   filter(!is.na(gcm)) %>%
   pull(gcm)
 
+palette <- wesanderson::wes_palette("Royal1")
+palette <- c("black", "gray", palette[c(1,4,2)])
+
 for(g in gcms) {
   
   p <- d %>%
@@ -363,14 +367,16 @@ for(g in gcms) {
     geom_line(linewidth = 0.2) +
     geom_vline(xintercept = 2021, linetype = 2) +
     xlab("") +
-    ylab("Mean precipitation across study region") +
+    ylab("Mean precipitation across study region (mm)") +
     xlim(1980, 2080) +
     ylim(0, 300) +
     ggtitle(g) +
+    scale_color_manual(values = palette) +
     theme_minimal() +
     theme(
       panel.grid.minor = element_blank(),
       legend.title = element_blank(),
+      legend.text = element_text(size = 12),
       legend.position = "bottom"
     ) +
     facet_wrap(~month)
