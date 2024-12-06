@@ -114,7 +114,28 @@ ggsave(
   units = "px"
 )
 
-#==============================================================================
+
+# Plot and save precipitation raster representing the average yearly rainfall
+# from 2008-2021
+index <- rep(1:14, each = 12)
+r.yearly <- tapp(r, index = index, fun = sum)
+r.yearly.mean <- mean(r.yearly)
+
+p <- ggplot() +
+  geom_spatraster(data = r.yearly.mean) +
+  geom_sf(data = east.africa, fill = NA) +
+  scale_fill_distiller(palette = "Spectral", na.value = "white") +
+  theme_void()
+
+ggsave(
+  p,
+  filename = "outputs/predictor_layers/precipitation_yearly_average_2008-2021.jpg",
+  width = 1000,
+  height = 1000,
+  units = "px"
+)
+
+ #==============================================================================
 
 
 # Generate future projections of precipitation on a by-month basis using the
