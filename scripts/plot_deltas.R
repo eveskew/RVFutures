@@ -71,7 +71,7 @@ for(gcm in gcms) {
         geom_spatraster(data = delta) +
         geom_sf(data = east.africa, fill = NA) +
         scale_fill_gradient2(
-          low = "darkblue", mid = "floralwhite", high = "darkred",
+          low = "darkgreen", mid = "floralwhite", high = "darkred",
           na.value = "white",
           limits = c(-0.5, 0.5),
           name = "Change\nin RVF\nlikelihood\nrelative to\nhistorical\nbaseline"
@@ -141,7 +141,7 @@ for(ssp in ssps.upper) {
       geom_spatraster(data = delta) +
       geom_sf(data = east.africa, fill = NA) +
       scale_fill_gradient2(
-        low = "darkblue", mid = "floralwhite", high = "darkred",
+        low = "darkgreen", mid = "floralwhite", high = "darkred",
         na.value = "white",
         name = "Change\nin RVF\nlikelihood\nrelative to\nhistorical\nbaseline",
         limits = c(-0.5, 0.5)
