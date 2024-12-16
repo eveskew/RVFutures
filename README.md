@@ -8,7 +8,7 @@ Eskew, E.A. E. Clancey, D. Singh, S. Situma, L. Nyakarahuka, M. K. Njenga, and S
 
 ### Predictor Variables
 
-Models of inter-epidemic Rift Valley fever relied on a suite of spatially-explicit predictor variables. All predictors were ultimately processed to a resolution of 2.5 arcminutes, but here we provide details about the sourcing and native resolution of all predictors:
+Models of inter-epidemic Rift Valley fever (RVF) relied on a suite of spatially-explicit predictor variables. All predictors were ultimately processed to a resolution of 2.5 arcminutes, but here we provide details about the sourcing and native resolution of all predictors:
 
 - Hydrology
 
@@ -47,3 +47,33 @@ Models of inter-epidemic Rift Valley fever relied on a suite of spatially-explic
     - Historical climate data from [WorldClim](https://www.worldclim.org/data/worldclim21.html)
 
     - Projected climate data from [WorldClim](https://www.worldclim.org/data/cmip6/cmip6climate.html) (downscaled output from various CMIP6 models at 2.5 arcminute resolution)
+
+--- 
+
+### Project Workflow
+
+To help explain the project scripts, the overall workflow is as follows:
+
+#### Gather predictor variables
+
+    - [`get_SoilGrids_data.R`](/scripts/get_SoilGrids_data.R) programmatically downloads the soil predictor data. All other predictor data were manually downloaded from the online resources described above
+
+#### Process predictor variables
+
+    - [`process_all_predictors.R`](/scripts/process_all_predictors.R) processes all predictor data into rasters of 2.5 arcminute resolution. This script calls the various `process_*_data.R` scripts that each handle a certain type of predictor data. Note that these scripts do need to be called in the order prescribed by `process_all_predictors.R` so that intermediate files are available, as needed
+
+    - [`generate_predictor_flat_files.R`](/scripts/generate_predictor_flat_files.R) takes the 2.5 arcminute raster predictor files and generates flat CSV files describing the predictor data for each grid cell across the study region. Predictor data in this format are necessary for downstream modeling. Note that these flat predictor files are generated for both historical and future climate conditions
+
+#### Prepare data for modeling
+
+    - [`generate_absence_data.R`](/scripts/generate_absence_data.R) generates the background (i.e., pseudo-absence) data for use in inter-epidemic RVF modeling
+
+    - [`extract_outbreak_absence_predictors.R`](/scripts/extract_outbreak_absence_predictors.R) uses the predictor flat files to generate a data frame with predictor data for all observed inter-epidemic RVF outbreak events as well as the background points
+
+#### Modeling of inter-epidemic RVF
+
+    - [`fit_model.R`](/scripts/fit_model.R) fits and saves an XGBoost model of the disease outbreak and background data
+
+#### Model post-processing and validation
+
+#### Plotting
