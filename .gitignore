@@ -3,7 +3,6 @@
 .Rproj.user
 
 *.jpeg
-data/outbreak_data/
 data/prediction_deltas/
 data/prediction_rasters/
 data/predictor_flat_files

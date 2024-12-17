@@ -66,9 +66,9 @@ To help explain the project scripts, the overall workflow is as follows:
 
 #### Prepare data for modeling
 
-- [`generate_absence_data.R`](/scripts/generate_absence_data.R) generates the background (i.e., pseudo-absence) data for use in inter-epidemic RVF modeling
+- [`generate_absence_data.R`](/scripts/generate_absence_data.R) generates the background (i.e., pseudo-absence) data for use in inter-epidemic RVF modeling. Produces the `data_*_pseudoabsences.csv` files in the [data/outbreak_data](/data/outbreak_data/) subdirectory
 
-- [`extract_outbreak_absence_predictors.R`](/scripts/extract_outbreak_absence_predictors.R) uses the predictor flat files to generate a data frame with predictor data for all observed inter-epidemic RVF outbreak events as well as the background points
+- [`extract_outbreak_absence_predictors.R`](/scripts/extract_outbreak_absence_predictors.R) uses the predictor flat files to generate a data frame with predictor data for all observed inter-epidemic RVF outbreak events as well as the background points. Produces the `outbreak_*_predictors.csv` files in the [data/outbreak_data](/data/outbreak_data/) subdirectory
 
 #### Modeling of inter-epidemic RVF
 

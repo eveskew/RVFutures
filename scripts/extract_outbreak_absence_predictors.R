@@ -151,17 +151,21 @@ ggplot() +
 
 # Save data frames with extracted predictors
 
+cols.to.exclude <- c(13, 15:17, 25:75)
+
 d.random %>%
-  mutate(
-    month_numeric = match(month, month.name),
+  select(!all_of(cols.to.exclude)) %>%
+  mutate(month_numeric = match(month, month.name)) %>%
+  rename(
     longitude = x,
     latitude = y
   ) %>%
   write_csv(file = "data/outbreak_data/outbreak_random_predictors.csv")
 
 d.popweighted %>%
-  mutate(
-    month_numeric = match(month, month.name),
+  select(!all_of(cols.to.exclude)) %>%
+  mutate(month_numeric = match(month, month.name)) %>%
+  rename(
     longitude = x,
     latitude = y
   ) %>%
