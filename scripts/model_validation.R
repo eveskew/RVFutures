@@ -313,6 +313,14 @@ mean <- mean(r)
 values <- values(mean)
 df$RVF_relative_likelihood <- values[df$cell]
 
+# Save the data that is ultimately used for model validation
+
+df %>%
+  select(-cell) %>%
+  write_csv(file = "data/serology_data/serology_data_for_validation.csv")
+
+df <- read_csv("data/serology_data/serology_data_for_validation.csv")
+
 #==============================================================================
 
 
