@@ -25,6 +25,7 @@ ssps <- c("ssp126", "ssp245", "ssp370")
 ssps.upper <- toupper(ssps)
 
 years <- c("2030", "2050", "2070")
+timespans <- c("2021-2040", "2041-2060", "2061-2080")
 
 month.character <- c("01", "02", "03", "04", "05", "06", "07", "08", "09",
                      "10", "11", "12")
@@ -74,9 +75,9 @@ for(gcm in gcms) {
           low = "darkgreen", mid = "floralwhite", high = "darkred",
           na.value = "white",
           limits = c(-0.5, 0.5),
-          name = "Change\nin RVF\nlikelihood\nrelative to\nhistorical\nbaseline"
+          name = "Change\nin RVF\nlikelihood"
         ) +
-        ggtitle(paste(gcm, ssp, year, sep = ", ")) +
+        ggtitle(paste(gcm, ssp, timespans[which(years == year)], sep = ", ")) +
         theme_void() +
         facet_wrap(~lyr)
       
@@ -143,10 +144,10 @@ for(ssp in ssps.upper) {
       scale_fill_gradient2(
         low = "darkgreen", mid = "floralwhite", high = "darkred",
         na.value = "white",
-        name = "Change\nin RVF\nlikelihood\nrelative to\nhistorical\nbaseline",
+        name = "Change\nin RVF\nlikelihood",
         limits = c(-0.5, 0.5)
       ) +
-      ggtitle(paste("GCM Ensemble", ssp, year, sep = ", ")) +
+      ggtitle(paste("GCM Ensemble", ssp, timespans[which(years == year)], sep = ", ")) +
       theme_void() +
       facet_wrap(~lyr)
     
@@ -223,17 +224,17 @@ for(ssp in ssps) {
       scale_fill_gradient2(
         low = "darkred", mid = "floralwhite", high = "darkblue",
         na.value = "white",
-        name = "Change in\nprecipitation\nrelative to\nhistorical\nbaseline",
+        name = "Change in\nprecipitation",
         limits = c(-120, 120)
       ) +
-      ggtitle(paste("GCM Ensemble", toupper(ssp), year, sep = ", ")) +
+      ggtitle(paste("GCM Ensemble", toupper(ssp), timespans[which(years == year)], sep = ", ")) +
       theme_void() +
       facet_wrap(~lyr)
     
     ggsave(
       filename = paste0(
         "outputs/deltas/precipitation_GCM_ensemble_", 
-        paste(ssp, year, sep = "_"),
+        paste(toupper(ssp), year, sep = "_"),
         ".jpg"
       ),
       plot = p,
@@ -290,16 +291,16 @@ for(ssp in ssps) {
         low = "floralwhite", high = "darkred",
         na.value = "white",
         limits = c(0, 4),
-        name = "Change\nin monthly\nmax temp\nrelative to\nhistorical\nbaseline"
+        name = "Change\nin monthly\nmax temp"
       ) +
-      ggtitle(paste("GCM Ensemble", toupper(ssp), year, sep = ", ")) +
+      ggtitle(paste("GCM Ensemble", toupper(ssp), timespans[which(years == year)], sep = ", ")) +
       theme_void() +
       facet_wrap(~lyr)
     
     ggsave(
       filename = paste0(
         "outputs/deltas/tmax_GCM_ensemble_", 
-        paste(ssp, year, sep = "_"),
+        paste(toupper(ssp), year, sep = "_"),
         ".jpg"
       ),
       plot = p,
@@ -356,16 +357,16 @@ for(ssp in ssps) {
         low = "floralwhite", high = "darkred",
         na.value = "white",
         limits = c(0, 4),
-        name = "Change\nin monthly\nmin temp\nrelative to\nhistorical\nbaseline"
+        name = "Change\nin monthly\nmin temp"
       ) +
-      ggtitle(paste("GCM Ensemble", toupper(ssp), year, sep = ", ")) +
+      ggtitle(paste("GCM Ensemble", toupper(ssp), timespans[which(years == year)], sep = ", ")) +
       theme_void() +
       facet_wrap(~lyr)
     
     ggsave(
       filename = paste0(
         "outputs/deltas/tmin_GCM_ensemble_", 
-        paste(ssp, year, sep = "_"),
+        paste(toupper(ssp), year, sep = "_"),
         ".jpg"
       ),
       plot = p,
