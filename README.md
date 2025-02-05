@@ -2,7 +2,7 @@
 
 This repository contains code, data, and figures that support:
 
-Eskew, E.A. E. Clancey, D. Singh, S. Situma, L. Nyakarahuka, M. K. Njenga, and S. L. Nuismer. Predicting climate change impacts on inter-epidemic risk of Rift Valley fever across East Africa.
+Eskew, E.A. E. Clancey, D. Singh, S. Situma, L. Nyakarahuka, M. K. Njenga, and S. L. Nuismer. Projecting climate change impacts on inter-epidemic risk of Rift Valley fever across East Africa.
 
 ---
 
@@ -72,8 +72,16 @@ To help explain the project scripts, the overall workflow is as follows:
 
 #### Modeling of inter-epidemic RVF
 
-- [`fit_model.R`](/scripts/fit_model.R) fits and saves an XGBoost model of the disease outbreak and background data
+- [`fit_model.R`](/scripts/fit_model.R) fits and saves an XGBoost model of the disease outbreak and background data. These objects are saved in the [data/saved_objects](/data/saved_objects/) subdirectory
 
 #### Model post-processing and validation
+
+- [`model_postprocessing.R`](/scripts/model_postprocessing.R) uses saved XGBoost model objects to generate ROC curve, variable importance, and partial dependence plots. Also calculates the cutoff value that maximizes the true skill statistic (TSS) for use in downstream analyses
+
+- [`generate_prediction_rasters.R`](/scripts/generate_prediction_rasters.R) uses saved XGBoost model objects to generate prediction rasters showing the relative likelihood of RVF across the study region. These prediction rasters are generated for all months of the calendar year using predictor data describing historical climate (1970-2000), historical weather (2008-2021), and future climate conditions. Summary data is written to [prediction_raster_summary.csv](/data/misc/prediction_raster_summary.csv)
+
+- [`model_validation.R`](/scripts/model_validation.R) calculates grid cell-level RVFV force of infection (FOI) and combines these estimates with RVF relative likelihood values from the prediction raster layers to validate our model's predictive ability. Also generates the accompanying figure. Data written to [serology_data_for_validation.csv](/data/serology_data/serology_data_for_validation.csv)
+
+- [`calculate_pop_at_risk.R`](/scripts/calculate_pop_at_risk.R) combines predicted RVF relative likelihood values from the prediction rasters with estimates of future human population to calculate the future population at risk. Estimates written to [human_pop_at_risk.csv](/data/misc/human_pop_at_risk.csv)
 
 #### Plotting
