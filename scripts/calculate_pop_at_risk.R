@@ -122,6 +122,9 @@ d$pop_size_at_risk <- global(
 # Calculate proportion of the study region's population at risk
 d$prop_at_risk <- d$pop_size_at_risk/d$total_pop_size
 
+# Save data
+write_csv(d, file = "data/misc/human_pop_at_risk.csv")
+
 #==============================================================================
 
 

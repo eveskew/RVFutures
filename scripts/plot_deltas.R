@@ -145,7 +145,7 @@ for(ssp in ssps.upper) {
         low = "darkgreen", mid = "floralwhite", high = "darkred",
         na.value = "white",
         name = "Change\nin RVF\nlikelihood",
-        limits = c(-0.5, 0.5)
+        limits = c(-0.35, 0.35)
       ) +
       ggtitle(paste("GCM Ensemble", ssp, timespans[which(years == year)], sep = ", ")) +
       theme_void() +

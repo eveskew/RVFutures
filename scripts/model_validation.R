@@ -347,17 +347,17 @@ df %>%
   ) +
   xlab("Mean relative likelihood of RVF from 2008-2021") +
   ylab("Estimated RVFV FOI") +
-  guides(size = guide_legend(title = "Number of tests")) +
+  guides(size = guide_legend(title = "Number\nof assays")) +
   theme_minimal() +
   theme(
     text = element_text(size = 20),
     legend.position = "inside",
-    legend.position.inside = c(0.8, 0.8),
+    legend.position.inside = c(0.83, 0.8),
     legend.background = element_rect(fill = "white", color = "black")
   )
 
 ggsave(
-  "outputs/figures/FOI.jpg",
+  "outputs/figures/foi.jpg",
   width = 9, height = 6
 )
 
