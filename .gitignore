@@ -4,9 +4,11 @@
 
 data/prediction_deltas/
 data/prediction_rasters/
-data/predictor_flat_files
+data/predictor_flat_files/
 data/rasters/
 data/serology_data/
 documents/
-outputs/
+outputs/*
 scripts/archive/
+
+!outputs/figures/

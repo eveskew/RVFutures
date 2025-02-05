@@ -2,7 +2,7 @@
 
 This repository contains code, data, and figures that support:
 
-Eskew, E.A. E. Clancey, D. Singh, S. Situma, L. Nyakarahuka, M. K. Njenga, and S. L. Nuismer. Projecting climate change impacts on inter-epidemic risk of Rift Valley fever across East Africa.
+Eskew, E.A., E. Clancey, D. Singh, S. Situma, L. Nyakarahuka, M. K. Njenga, and S. L. Nuismer. Projecting climate change impacts on inter-epidemic risk of Rift Valley fever across East Africa.
 
 ---
 
