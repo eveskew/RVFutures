@@ -12,7 +12,7 @@ source("R/functions.R")
 
 # Import saved XGBoost model object
 
-xgb.RVF.final <- readRDS("saved_objects/xgb.RVF.final.rds")
+xgb.RVF.final <- readRDS("data/saved_objects/xgb.RVF.final.rds")
 full.training.fit <- extract_workflow(xgb.RVF.final)
 
 #==============================================================================

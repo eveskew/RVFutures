@@ -45,25 +45,25 @@ d <- read_csv("data/outbreak_data/outbreak_popweighted_predictors.csv") %>%
 
 # Set up a data split that reserves all data from post-2018 as test data
 d.split <- group_initial_split(d, group = testing_data)
-saveRDS(d.split, "saved_objects/d.split.rds")
-d.split <- readRDS("saved_objects/d.split.rds")
+saveRDS(d.split, "data/saved_objects/d.split.rds")
+d.split <- readRDS("data/saved_objects/d.split.rds")
 
 # Get training data out of the split object
 d.train <- training(d.split)
-saveRDS(d.train, "saved_objects/d.train.rds")
-d.train <- readRDS("saved_objects/d.train.rds")
+saveRDS(d.train, "data/saved_objects/d.train.rds")
+d.train <- readRDS("data/saved_objects/d.train.rds")
 table(d.train$year, d.train$RVF_presence)
 
 # Get testing data out of the split object
 d.test <- testing(d.split)
-saveRDS(d.test, "saved_objects/d.test.rds")
-d.test <- readRDS("saved_objects/d.test.rds")
+saveRDS(d.test, "data/saved_objects/d.test.rds")
+d.test <- readRDS("data/saved_objects/d.test.rds")
 table(d.test$year, d.test$RVF_presence)
 
 # Divide the training data into folds
 d.folds <- vfold_cv(d.train, v = 3, strata = "RVF_presence")
-saveRDS(d.folds, "saved_objects/d.folds.rds")
-d.folds <- readRDS("saved_objects/d.folds.rds")
+saveRDS(d.folds, "data/saved_objects/d.folds.rds")
+d.folds <- readRDS("data/saved_objects/d.folds.rds")
 
 #==============================================================================
 
@@ -124,7 +124,7 @@ xgb.RVF.tune <- tune_grid(
   resamples = d.folds,
   grid = xgb.grid
 )
-saveRDS(xgb.RVF.tune, "saved_objects/xgb.RVF.tune.rds")
+saveRDS(xgb.RVF.tune, "data/saved_objects/xgb.RVF.tune.rds")
  
 show_best(xgb.RVF.tune, metric = "roc_auc")
 autoplot(xgb.RVF.tune, metric = "roc_auc")
@@ -135,4 +135,4 @@ xgb.RVF.final <- xgb.RVF.workflow %>%
   last_fit(d.split)
 
 xgb.RVF.final
-saveRDS(xgb.RVF.final, "saved_objects/xgb.RVF.final.rds")
+saveRDS(xgb.RVF.final, "data/saved_objects/xgb.RVF.final.rds")

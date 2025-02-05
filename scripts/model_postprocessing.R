@@ -11,9 +11,9 @@ source("R/functions.R")
 
 # Import saved XGBoost model objects
 
-d.train <- readRDS("saved_objects/d.train.rds")
-d.test <- readRDS("saved_objects/d.test.rds")
-xgb.RVF.final <- readRDS("saved_objects/xgb.RVF.final.rds")
+d.train <- readRDS("data/saved_objects/d.train.rds")
+d.test <- readRDS("data/saved_objects/d.test.rds")
+xgb.RVF.final <- readRDS("data/saved_objects/xgb.RVF.final.rds")
 
 #==============================================================================
 
