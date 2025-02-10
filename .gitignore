@@ -5,11 +5,22 @@
 data/prediction_deltas/*
 data/prediction_rasters/*
 data/predictor_flat_files/*
-data/rasters/*
+data/rasters/elevation/SRTM/*
+data/rasters/healthcare/2020_motorized_travel_time_to_healthcare.geotiff
+data/rasters/human_population/*
+data/rasters/hydrology/HydroLAKES_polys_v10_shp/*
+data/rasters/hydrology/HydroRIVERS_v10_af_shp/*
+data/rasters/land_cover/*
+data/rasters/livestock/*
+data/rasters/precipitation/*
+data/rasters/soil/SoilGrids/*
+data/rasters/temperature/*
 data/serology_data/*
 documents/*
 outputs/*
 scripts/archive/*
 
+!data/rasters/human_population/processed/
+!data/rasters/livestock/processed/
 !data/serology_data/serology_data_for_validation.csv
 !outputs/figures/
