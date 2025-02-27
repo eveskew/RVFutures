@@ -155,18 +155,18 @@ for(var in variables) {
     # Generate predictor layers for 2024-2050 and save them
     for(year in 2024:2050) {
       
-      writeRaster(
-        generate_raster_projection(
-          regression_raster = x,
-          first_year_of_data = first.data.year,
-          projection_year = year,
-          lower_clamp = -20,
-          upper_clamp = 80,
-          layer_name = paste0("linear_projection_", var, "_", year, "-", month)
-        ), 
-        paste0("data/rasters/temperature/processed/linear_projection_2.5min_", var, "_", year, "-", month, ".tif"),
-        overwrite = TRUE
-      )
+      # writeRaster(
+      #   generate_raster_projection(
+      #     regression_raster = x,
+      #     first_year_of_data = first.data.year,
+      #     projection_year = year,
+      #     lower_clamp = -20,
+      #     upper_clamp = 80,
+      #     layer_name = paste0("linear_projection_", var, "_", year, "-", month)
+      #   ), 
+      #   paste0("data/rasters/temperature/processed/linear_projection_2.5min_", var, "_", year, "-", month, ".tif"),
+      #   overwrite = TRUE
+      # )
     }
   }
 }

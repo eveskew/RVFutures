@@ -168,17 +168,17 @@ for(month in months) {
   # Generate raster layers for 2024-2050 and save them
   for(year in 2024:2050) {
     
-    writeRaster(
-      generate_raster_projection(
-        regression_raster = x,
-        first_year_of_data = first.data.year,
-        projection_year = year,
-        lower_clamp = 0,
-        layer_name = paste0("linear_projection_", year, "-", month)
-      ), 
-      paste0("data/rasters/precipitation/processed/linear_projection_2.5min_", year, "-", month, ".tif"),
-      overwrite = TRUE
-    )
+    # writeRaster(
+    #   generate_raster_projection(
+    #     regression_raster = x,
+    #     first_year_of_data = first.data.year,
+    #     projection_year = year,
+    #     lower_clamp = 0,
+    #     layer_name = paste0("linear_projection_", year, "-", month)
+    #   ), 
+    #   paste0("data/rasters/precipitation/processed/linear_projection_2.5min_", year, "-", month, ".tif"),
+    #   overwrite = TRUE
+    # )
   }
 }
 
