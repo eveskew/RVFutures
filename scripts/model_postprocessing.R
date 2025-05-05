@@ -22,11 +22,11 @@ xgb.RVF.final <- readRDS("data/saved_objects/xgb.RVF.final.rds")
 
 xgb.RVF.final %>%
   collect_predictions() %>%
-  roc_auc(RVF_presence_f, `.pred_0`)
+  roc_auc(RVF_presence_f, `.pred_1`, event_level = "second")
 
 xgb.RVF.final %>%
   collect_predictions() %>%
-  roc_curve(RVF_presence_f, `.pred_0`) %>%
+  roc_curve(RVF_presence_f, `.pred_1`, event_level = "second") %>%
   autoplot()
 
 ggsave(
@@ -70,7 +70,7 @@ saveRDS(tss.cutoff, "data/misc/tss.cutoff.rds")
 
 # Alternative version of the ROC curve
 
-per.measure <- ROCR::performance(pred.object, "tnr", "fnr")
+per.measure <- ROCR::performance(pred.object, "tpr", x.measure = "fpr")
 plot(per.measure, col = "red", lwd = 1)
 abline(a = 0, b = 1, lwd = 1, lty = 1, col = "gray")
 
