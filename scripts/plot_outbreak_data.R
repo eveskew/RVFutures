@@ -3,6 +3,7 @@ library(rnaturalearth)
 library(sf)
 library(terra)
 library(tidyterra)
+library(ggspatial)
 
 sf_use_s2(FALSE)
 
@@ -120,12 +121,8 @@ plot(vrt.crop)
 
 # Calculate slope, aspect, and hillshade using the elevation data
 sl.radians <- terrain(vrt.crop, v = "slope", unit = "radians")
-saveRDS(sl.radians, file = "data/rasters/elevation/saved_objects/sl_radians.rds")
-sl.radians <- readRDS("data/rasters/elevation/saved_objects/sl_radians.rds")
 
 asp.radians <- terrain(vrt.crop, v = "aspect", unit = "radians")
-saveRDS(asp.radians, file = "data/rasters/elevation/saved_objects/asp_radians.rds")
-asp.radians <- readRDS("data/rasters/elevation/saved_objects/asp_radians.rds")
 
 hill.single <- shade(
   sl.radians, asp.radians,
@@ -133,8 +130,7 @@ hill.single <- shade(
   direction = 315,
   normalize = TRUE
 )
-saveRDS(hill.single, file = "data/rasters/elevation/saved_objects/hill_single.rds")
-hill.single <- readRDS("data/rasters/elevation/saved_objects/hill_single.rds")
+
 plot(hill.single, col = grey(1:100/100))
 
 hill.multi <- purrr::map(
@@ -150,8 +146,7 @@ hill.multi <- purrr::map(
 hill.multi <- hill.multi %>%
   rast() %>%
   sum()
-saveRDS(hill.multi, file = "data/rasters/elevation/saved_objects/hill_multi.rds")
-hill.multi <- readRDS("data/rasters/elevation/saved_objects/hill_multi.rds")
+
 plot(hill.multi, col = grey(1:100/100))
 
 #==============================================================================
@@ -167,8 +162,10 @@ d <- read_csv("data/outbreak_data/EC_RVF_clean_April27.csv") %>%
 
 # Plot RVF outbreak data
 
-cuts <- c(100, 250, 500, 1000, 2000, 4000, 6000, 9000)
-x <- 2000
+width <- 7
+x.dim <- st_bbox(east.africa)[3] - st_bbox(east.africa)[1]
+y.dim <- st_bbox(east.africa)[4] - st_bbox(east.africa)[2]
+yx.ratio <- round(y.dim/x.dim, digits = 1)
 
 
 # Plot a map with the elevation and hydrology layers
@@ -182,7 +179,7 @@ ggplot() +
     data = vrt.crop,
     alpha = 0.6
   ) +
-  scale_fill_hypso_tint_c(breaks = cuts) +
+  scale_fill_hypso_tint_c(limits = c(0, 6000)) +
   geom_sf(
     data = oceans,
     fill = "cornflowerblue",
@@ -205,12 +202,42 @@ ggplot() +
     linewidth = 1
   ) +
   geom_sf(data = d, aes(size = CASES), color = alpha("darkred", 0.5)) +
+  annotation_scale(
+    location = "bl",
+    bar_cols = c("black", "white"),
+    text_cex = 1,
+    pad_x = unit(0.5, "inch"),
+    pad_y = unit(0.6, "inch")
+  ) +
+  annotation_north_arrow(
+    location = "bl", 
+    which_north = "true",
+    height = unit(0.5, "inch"),
+    width = unit(0.4, "inch"),
+    pad_x = unit(0.98, "inch"), 
+    pad_y = unit(0.9, "inch"),
+    style = north_arrow_orienteering(
+      fill = c("black", "black")
+    )
+  ) +
   scale_alpha_manual(values = alpha.values) +
   theme_void() +
-  theme(legend.position = "none")
+  guides(
+    size = "none", 
+    alpha = "none",
+    fill = guide_colorbar(title = "Elevation\n(meters)")
+  ) +
+  theme(
+    legend.position = "inside",
+    legend.position.inside = c(0.885, 0.32),
+    legend.key.height = unit(0.5, "inch"),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
+  )
 
-ggsave("outputs/figures/RVF_outbreaks_elevation_hydro_map.jpg", 
-       width = x, height = x*1.4, units = "px")
+filename <- "outputs/figures/RVF_outbreaks_elevation_hydro_map.jpg"
+ggsave(filename, width = width, height = width * yx.ratio, units = "in")
+knitr::plot_crop(filename)
 
 
 # Plot a map with the hillshade, elevation, and hydrology layers
@@ -230,7 +257,7 @@ ggplot() +
     data = vrt.crop,
     alpha = 0.6
   ) +
-  scale_fill_hypso_tint_c(breaks = cuts) +
+  scale_fill_hypso_tint_c(limits = c(0, 6000)) +
   geom_sf(
     data = oceans,
     fill = "cornflowerblue",
@@ -253,12 +280,42 @@ ggplot() +
     linewidth = 1
   ) +
   geom_sf(data = d, aes(size = CASES), color = alpha("darkred", 0.5)) +
+  annotation_scale(
+    location = "bl",
+    bar_cols = c("black", "white"),
+    text_cex = 1,
+    pad_x = unit(0.5, "inch"),
+    pad_y = unit(0.6, "inch")
+  ) +
+  annotation_north_arrow(
+    location = "bl", 
+    which_north = "true",
+    height = unit(0.5, "inch"),
+    width = unit(0.4, "inch"),
+    pad_x = unit(0.98, "inch"), 
+    pad_y = unit(0.9, "inch"),
+    style = north_arrow_orienteering(
+      fill = c("black", "black")
+    )
+  ) +
   scale_alpha_manual(values = alpha.values) +
   theme_void() +
-  theme(legend.position = "none")
+  guides(
+    size = "none", 
+    alpha = "none",
+    fill = guide_colorbar(title = "Elevation\n(meters)")
+  ) +
+  theme(
+    legend.position = "inside",
+    legend.position.inside = c(0.885, 0.32),
+    legend.key.height = unit(0.5, "inch"),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
+  )
 
-ggsave("outputs/figures/RVF_outbreaks_hillshade_elevation_hydro_map.jpg", 
-       width = x, height = x*1.4, units = "px")
+filename <- "outputs/figures/RVF_outbreaks_hillshade_elevation_hydro_map.jpg"
+ggsave(filename, width = width, height = width * yx.ratio, units = "in")
+knitr::plot_crop(filename)
 
 
 ggplot() +
@@ -284,5 +341,6 @@ ggplot() +
   theme_void() +
   theme(legend.position = "none")
 
-ggsave("outputs/figures/RVF_outbreaks_admin1_map.jpg", 
-       width = x, height = x*1.4, units = "px")
+filename <- "outputs/figures/RVF_outbreaks_admin1_map.jpg"
+ggsave(filename, width = width, height = width * yx.ratio, units = "in")
+knitr::plot_crop(filename)
