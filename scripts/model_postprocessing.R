@@ -179,6 +179,7 @@ for(i in 1:length(vars.list)) {
     facet_ncol = 2
   )
   p <- p +
+    ylab("average relative likelihood of RVF") +
     ylim(0, 0.01) +
     theme(
       strip.text.x = element_text(size = 11)

@@ -75,7 +75,7 @@ for(gcm in gcms) {
           low = "darkgreen", mid = "floralwhite", high = "darkred",
           na.value = "white",
           limits = c(-0.5, 0.5),
-          name = "Change\nin RVF\nlikelihood"
+          name = "Change\nin RVF\nrelative\nlikelihood"
         ) +
         ggtitle(paste(gcm, ssp, timespans[which(years == year)], sep = ", ")) +
         theme_void() +
@@ -144,7 +144,7 @@ for(ssp in ssps.upper) {
       scale_fill_gradient2(
         low = "darkgreen", mid = "floralwhite", high = "darkred",
         na.value = "white",
-        name = "Change\nin RVF\nlikelihood",
+        name = "Change\nin RVF\nrelative\nlikelihood",
         limits = c(-0.35, 0.35)
       ) +
       ggtitle(paste("GCM Ensemble", ssp, timespans[which(years == year)], sep = ", ")) +
