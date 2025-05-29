@@ -83,9 +83,7 @@ resample_count_raster <- function(count_raster, crop_extent, raster_for_resampli
 
 # Function to generate a projected raster layer based on a regression raster
 
-generate_raster_projection <- function(
-    regression_raster, first_year_of_data, projection_year, 
-    lower_clamp = NULL, upper_clamp = NULL, layer_name) {
+generate_raster_projection <- function(regression_raster, first_year_of_data, projection_year, lower_clamp = NULL, upper_clamp = NULL, layer_name) {
   
   # calculate the projected raster layer using the regression raster
   p <- regression_raster$`(Intercept)` + regression_raster$x*length(first_year_of_data:projection_year)
@@ -172,9 +170,9 @@ extract_hydrology_distance <- function(dataframe, hydrology) {
   print("Calculating nearest hydrology")
   nearest <- sf::st_nearest_feature(dataframe, hydrology)
   print("Calculating distance to nearest hydrology")
-  dist_to_hydro <- sf::st_distance(dataframe, hydrology[nearest, ], by_element = TRUE)
-  dist_to_hydro <- as.numeric(dist_to_hydro)
-  return(dist_to_hydro)
+  dist.to.hydro <- sf::st_distance(dataframe, hydrology[nearest, ], by_element = TRUE)
+  dist.to.hydro <- as.numeric(dist.to.hydro)
+  return(dist.to.hydro)
 }
 
 
@@ -352,7 +350,7 @@ generate_predictor_report <- function(dataframe, type, filename) {
   
   # Pivot the predictor data frame into long format
   d.long <- dataframe %>%
-    select(-grid_cell) %>%
+    dplyr::select(-grid_cell) %>%
     tidyr::pivot_longer(
       !matches("year|month$"),
       names_to = "variable",
@@ -364,63 +362,175 @@ generate_predictor_report <- function(dataframe, type, filename) {
   if(type == "static") {
     
     d.sum <- d.long %>%
-      group_by(variable) %>%
-      summarize(
+      dplyr::group_by(variable) %>%
+      dplyr::summarize(
         min = min(value, na.rm = TRUE),
         mean = mean(value, na.rm = TRUE),
         max = max(value, na.rm = TRUE),
         n_missing = sum(is.na(value)),
         prop_missing = n_missing/n()
       ) %>%
-      ungroup()
+      dplyr::ungroup()
   }
   
   if(type == "yearly") {
     
     d.sum <- d.long %>%
-      group_by(variable, year) %>%
-      summarize(
+      dplyr::group_by(variable, year) %>%
+      dplyr::summarize(
         min = min(value, na.rm = TRUE),
         mean = mean(value, na.rm = TRUE),
         max = max(value, na.rm = TRUE),
         n_missing = sum(is.na(value)),
         prop_missing = n_missing/n()
       ) %>%
-      ungroup()
+      dplyr::ungroup()
   }
   
   if(type == "monthly") {
     
     d.sum <- d.long %>%
-      group_by(variable, year, month) %>%
-      summarize(
+      dplyr::group_by(variable, year, month) %>%
+      dplyr::summarize(
         min = min(value, na.rm = TRUE),
         mean = mean(value, na.rm = TRUE),
         max = max(value, na.rm = TRUE),
         n_missing = sum(is.na(value)),
         prop_missing = n_missing/n()
       ) %>%
-      ungroup()
+      dplyr::ungroup()
   }
   
   if(type == "monthly_climate") {
     
     d.sum <- d.long %>%
-      group_by(variable, month) %>%
-      summarize(
+      dplyr::group_by(variable, month) %>%
+      dplyr::summarize(
         min = min(value, na.rm = TRUE),
         mean = mean(value, na.rm = TRUE),
         max = max(value, na.rm = TRUE),
         n_missing = sum(is.na(value)),
         prop_missing = n_missing/n()
       ) %>%
-      ungroup()
+      dplyr::ungroup()
   }
   
   # Round all numeric variables to make nicer output
   d.sum <- d.sum %>%
-    mutate_if(is.numeric, round, digits = 3)
+    dplyr::mutate_if(is.numeric, round, digits = 3)
   
   # Save the report file
-  write_csv(d.sum, file = filename)
+  readr::write_csv(d.sum, file = filename)
+}
+
+
+
+# Function to pull centroid coordinates based on known admin level 2 locations
+
+pull_centroids_from_adm2 <- function(dataframe) {
+  
+  # Pull admin level 2 maps for all study countries
+  kenya.adm2 <- rgeoboundaries::geoboundaries(country = "Kenya", "adm2") %>%
+    sf::st_transform(., 4326)
+  uganda.adm2 <- rgeoboundaries::geoboundaries(country = "Uganda", "adm2") %>%
+    sf::st_transform(., 4326)
+  tanzania.adm2 <- rgeoboundaries::geoboundaries(country = "Tanzania", "adm2") %>%
+    sf::st_transform(., 4326)
+  
+  for(i in 1:nrow(dataframe)) {
+    
+    # If GPS information is missing
+    if (is.na(dataframe$GPS_x[i])) {
+      
+      # Generate a character vector with all known admin level 2 locations
+      query <- dataframe$ADM2[i] %>%
+        stringr::str_replace(., " District", "") %>%
+        stringr::str_split(., pattern = ", ") %>%
+        purrr::simplify()
+      
+      # Load the appropriate country map
+      if (dataframe$country[i] == "Kenya") {map <- kenya.adm2}
+      if (dataframe$country[i] == "Uganda") {map <- uganda.adm2}
+      if (dataframe$country[i] == "Tanzania") {map <- tanzania.adm2}
+      
+      # Subset the map to the appropriate admin level 2 areas
+      map.subset <- map %>%
+        dplyr::filter(shapeName %in% query)
+      
+      # Make sure all the relevant admin level 2 areas have been pulled
+      assertthat::assert_that(length(query) == nrow(map.subset))
+      
+      # Union the map subset
+      map.subset <- sf::st_union(map.subset)
+      
+      # Pull the map subset centroid
+      point <- sf::st_centroid(map.subset)
+      
+      # Assign the centroid coordinates to the missing GPS cells
+      dataframe$GPS_x[i] <- sf::st_coordinates(point)[,1]
+      dataframe$GPS_y[i] <- sf::st_coordinates(point)[,2]
+    }
+  }
+  
+  return(dataframe)
+}
+
+
+
+# Function to pull random coordinates based on known admin level 2 locations
+
+pull_random_points_from_adm2 <- function(dataframe) {
+  
+  # Pull in lakes layers so that maps can be differenced, preventing random 
+  # coordinates from occurring over water
+  lakes <- readRDS("data/rasters/hydrology/saved_objects/lakes_east_africa_5.rds") %>%
+    sf::st_union()
+  
+  # Pull admin level 2 maps for all study countries, differencing the lakes
+  kenya.adm2 <- rgeoboundaries::geoboundaries(country = "Kenya", "adm2") %>%
+    sf::st_transform(., 4326) %>%
+    sf::st_difference(., lakes)
+  uganda.adm2 <- rgeoboundaries::geoboundaries(country = "Uganda", "adm2") %>%
+    sf::st_transform(., 4326) %>%
+    sf::st_difference(., lakes)
+  tanzania.adm2 <- rgeoboundaries::geoboundaries(country = "Tanzania", "adm2") %>%
+    sf::st_transform(., 4326) %>%
+    sf::st_difference(., lakes)
+  
+  for(i in 1:nrow(dataframe)) {
+    
+    # If GPS information is missing
+    if (is.na(dataframe$GPS_x[i])) {
+      
+      # Generate a character vector with all known admin level 2 locations
+      query <- dataframe$ADM2[i] %>%
+        stringr::str_replace(., " District", "") %>%
+        stringr::str_split(., pattern = ", ") %>%
+        purrr::simplify()
+      
+      # Load the appropriate country map
+      if (dataframe$country[i] == "Kenya") {map <- kenya.adm2}
+      if (dataframe$country[i] == "Uganda") {map <- uganda.adm2}
+      if (dataframe$country[i] == "Tanzania") {map <- tanzania.adm2}
+      
+      # Subset the map to the appropriate admin level 2 areas
+      map.subset <- map %>%
+        dplyr::filter(shapeName %in% query)
+      
+      # Make sure all the relevant admin level 2 areas have been pulled
+      assertthat::assert_that(length(query) == nrow(map.subset))
+      
+      # Union the map subset
+      map.subset <- sf::st_union(map.subset)
+      
+      # Pull a random set of coordinates from the map subset
+      point <- sf::st_sample(map.subset, size = 1)
+      
+      # Assign the random coordinates to the missing GPS cells
+      dataframe$GPS_x[i] <- sf::st_coordinates(point)[,1]
+      dataframe$GPS_y[i] <- sf::st_coordinates(point)[,2]
+    }
+  }
+  
+  return(dataframe)
 }
