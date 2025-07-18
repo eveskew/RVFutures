@@ -26,7 +26,7 @@ st_erase <- function(x, y) st_difference(x, st_union(st_combine(y)))
 east.africa.lake.erase <- st_erase(east.africa, lakes.5)
 
 # Import observed RVF outbreak data
-d <- read_csv("data/outbreak_data/EC_RVF_clean_April27.csv")
+d <- read_csv("data/outbreak_data/outbreak_data_randomly_filled.csv")
 d.sf <- st_as_sf(d, coords = c("GPS_x", "GPS_y"), crs = st_crs(east.africa))
 
 n.points.per.yrmon <- 150
@@ -52,7 +52,7 @@ for(year in 2008:2022) {
   
   # Generate a buffer representing RVF outbreak locations in the focal year
   outbreak.buffer <- d.sf %>%
-    filter(OB_Yr == year) %>%
+    filter(outbreak_year == year) %>%
     st_buffer(dist = outbreak.buffer.radius * 2) %>%
     st_union()
   
@@ -90,8 +90,8 @@ for(year in 2008:2022) {
   # Subsample down to only the required number of points for a year
   temp <- slice_sample(temp, n = n.points.per.yrmon * 12) %>%
     mutate(
-      OB_Yr = rep(year, times = n.points.per.yrmon * 12),
-      OB_Mo = rep(month.name, each = n.points.per.yrmon)
+      outbreak_year = rep(year, times = n.points.per.yrmon * 12),
+      outbreak_month = rep(month.name, each = n.points.per.yrmon)
     )
   
   random.points <- bind_rows(random.points, temp)
@@ -111,7 +111,7 @@ inner.buffer <- d.sf %>%
   st_geometry() %>%
   # buffer around them
   st_buffer(dist = 0.5) %>%
-  # combine all 100 buffers into one layer
+  # combine all buffers into one layer
   st_combine() %>%
   # make it behave nicely
   st_make_valid()
@@ -121,7 +121,7 @@ outer.buffer <- d.sf %>%
   st_geometry() %>%
   # buffer around them
   st_buffer(dist = 1.5) %>%
-  # combine all 100 buffers into one layer
+  # combine all buffers into one layer
   st_combine() %>%
   # make it behave nicely
   st_make_valid()
@@ -156,8 +156,8 @@ for(i in 1:nrow(d.sf)) {
       GPS_y = Y
     ) %>%
     mutate(
-      OB_Yr = rep(d$OB_Yr[i], times = n.points.per.obs),
-      OB_Mo = rep(d$OB_Mo[i], times = n.points.per.obs) 
+      outbreak_year = rep(d$outbreak_year[i], times = n.points.per.obs),
+      outbreak_month = rep(d$outbreak_month[i], times = n.points.per.obs) 
     )
   
   doughnut.points <- bind_rows(doughnut.points, temp)
@@ -210,7 +210,7 @@ for(year in 2008:2022) {
   
   # Generate a buffer representing RVF outbreak locations in the focal year
   outbreak.buffer <- d.sf %>%
-    filter(OB_Yr == year) %>%
+    filter(outbreak_year == year) %>%
     st_buffer(dist = outbreak.buffer.radius * 2) %>%
     st_union()
   
@@ -273,8 +273,8 @@ for(year in 2008:2022) {
   # Subsample down to only the required number of points for a year
   temp <- slice_sample(temp, n = n.points.per.yrmon * 12) %>%
     mutate(
-      OB_Yr = rep(year, times = n.points.per.yrmon * 12),
-      OB_Mo = rep(month.name, each = n.points.per.yrmon)
+      outbreak_year = rep(year, times = n.points.per.yrmon * 12),
+      outbreak_month = rep(month.name, each = n.points.per.yrmon)
     )
   
   human.points <- bind_rows(human.points, temp)
@@ -315,7 +315,7 @@ for(year in 2008:2022) {
   
   # Generate a buffer representing RVF outbreak locations in the focal year
   outbreak.buffer <- d.sf %>%
-    filter(OB_Yr == year) %>%
+    filter(outbreak_year == year) %>%
     st_buffer(dist = outbreak.buffer.radius * 2) %>%
     st_union()
   
@@ -377,8 +377,8 @@ for(year in 2008:2022) {
   # Subsample down to only the required number of points for a year
   temp <- slice_sample(temp, n = n.points.per.yrmon * 12) %>%
     mutate(
-      OB_Yr = rep(year, times = n.points.per.yrmon * 12),
-      OB_Mo = rep(month.name, each = n.points.per.yrmon)
+      outbreak_year = rep(year, times = n.points.per.yrmon * 12),
+      outbreak_month = rep(month.name, each = n.points.per.yrmon)
     )
   
   travel.points <- rbind(travel.points, temp)  
@@ -391,8 +391,9 @@ for(year in 2008:2022) {
 
 
 d.random <- d %>%
+  mutate(RVF_presence = rep(1, nrow(.))) %>%
   bind_rows(random.points) %>%
-  mutate(RVF_presence = ifelse(is.na(CASES), 0, 1)) 
+  mutate(RVF_presence = ifelse(is.na(RVF_presence), 0, RVF_presence)) 
 
 d.random.sf <- d.random %>%
   st_as_sf(coords = c("GPS_x", "GPS_y"), crs = st_crs(east.africa))
@@ -410,7 +411,7 @@ ggplot() +
 ggplot() +
   geom_sf(data = east.africa, fill = "white") +
   geom_sf(data = lakes.5, fill = "lightblue") +
-  geom_sf(data = filter(d.random.sf, OB_Yr == 2018), aes(color = as.factor(RVF_presence))) +
+  geom_sf(data = filter(d.random.sf, outbreak_year == 2018), aes(color = as.factor(RVF_presence))) +
   scale_color_manual(values = c(alpha("gray", 0.2), "darkred")) +
   theme_void() +
   theme(
@@ -422,12 +423,13 @@ ggplot() +
   geom_sf(data = d.random.sf, aes(color = as.factor(RVF_presence))) +
   scale_color_manual(values = c(alpha("gray", 0.2), "darkred")) +
   theme_void() +
-  facet_wrap(~OB_Yr)
+  facet_wrap(~outbreak_year)
 
 
 d.doughnut <- d %>%
+  mutate(RVF_presence = rep(1, nrow(.))) %>%
   bind_rows(doughnut.points) %>%
-  mutate(RVF_presence = ifelse(is.na(CASES), 0, 1)) 
+  mutate(RVF_presence = ifelse(is.na(RVF_presence), 0, RVF_presence)) 
 
 d.doughnut.sf <- d.doughnut %>%
   st_as_sf(coords = c("GPS_x", "GPS_y"), crs = st_crs(east.africa))
@@ -445,7 +447,7 @@ ggplot() +
 ggplot() +
   geom_sf(data = east.africa, fill = "white") +
   geom_sf(data = lakes.5, fill = "lightblue") +
-  geom_sf(data = filter(d.doughnut.sf, OB_Yr == 2018), aes(color = as.factor(RVF_presence))) +
+  geom_sf(data = filter(d.doughnut.sf, outbreak_year == 2018), aes(color = as.factor(RVF_presence))) +
   scale_color_manual(values = c(alpha("gray", 0.2), "darkred")) +
   theme_void() +
   theme(
@@ -457,12 +459,13 @@ ggplot() +
   geom_sf(data = d.doughnut.sf, aes(color = as.factor(RVF_presence))) +
   scale_color_manual(values = c(alpha("gray", 0.2), "darkred")) +
   theme_void() +
-  facet_wrap(~OB_Yr)
+  facet_wrap(~outbreak_year)
 
 
 d.popweighted <- d %>%
+  mutate(RVF_presence = rep(1, nrow(.))) %>%
   bind_rows(human.points) %>%
-  mutate(RVF_presence = ifelse(is.na(CASES), 0, 1)) 
+  mutate(RVF_presence = ifelse(is.na(RVF_presence), 0, RVF_presence)) 
 
 d.popweighted.sf <- d.popweighted %>%
   st_as_sf(coords = c("GPS_x", "GPS_y"), crs = st_crs(east.africa))
@@ -480,7 +483,7 @@ ggplot() +
 ggplot() +
   geom_sf(data = east.africa.lake.erase, fill = "white") +
   geom_sf(data = lakes.5, fill = "lightblue") +
-  geom_sf(data = filter(d.popweighted.sf, OB_Yr == 2018), aes(color = as.factor(RVF_presence))) +
+  geom_sf(data = filter(d.popweighted.sf, outbreak_year == 2018), aes(color = as.factor(RVF_presence))) +
   scale_color_manual(values = c(alpha("gray", 0.2), "darkred")) +
   theme_void() +
   theme(
@@ -492,12 +495,13 @@ ggplot() +
   geom_sf(data = d.popweighted.sf, aes(color = as.factor(RVF_presence))) +
   scale_color_manual(values = c(alpha("gray", 0.2), "darkred")) +
   theme_void() +
-  facet_wrap(~OB_Yr)
+  facet_wrap(~outbreak_year)
 
 
 d.travel <- d %>%
+  mutate(RVF_presence = rep(1, nrow(.))) %>%
   bind_rows(travel.points) %>%
-  mutate(RVF_presence = ifelse(is.na(CASES), 0, 1)) 
+  mutate(RVF_presence = ifelse(is.na(RVF_presence), 0, RVF_presence)) 
 
 d.travel.sf <- d.travel %>%
   st_as_sf(coords = c("GPS_x", "GPS_y"), crs = st_crs(east.africa))
@@ -515,7 +519,7 @@ ggplot() +
 ggplot() +
   geom_sf(data = east.africa, fill = "white") +
   geom_sf(data = lakes.5, fill = "lightblue") +
-  geom_sf(data = filter(d.travel.sf, OB_Yr == 2018), aes(color = as.factor(RVF_presence))) +
+  geom_sf(data = filter(d.travel.sf, outbreak_year == 2018), aes(color = as.factor(RVF_presence))) +
   scale_color_manual(values = c(alpha("gray", 0.2), "darkred")) +
   theme_void() +
   theme(
@@ -527,13 +531,13 @@ ggplot() +
   geom_sf(data = d.travel.sf, aes(color = as.factor(RVF_presence))) +
   scale_color_manual(values = c(alpha("gray", 0.2), "darkred")) +
   theme_void() +
-  facet_wrap(~OB_Yr)
+  facet_wrap(~outbreak_year)
 
 #==============================================================================
 
 
 # Save data
 
-write_csv(d.random, file = "data/outbreak_data/data_random_pseudoabsences.csv")
-write_csv(d.popweighted, file = "data/outbreak_data/data_popweighted_pseudoabsences.csv")
-write_csv(d.travel, file = "data/outbreak_data/data_travel_pseudoabsences.csv")
+write_csv(d.random, file = "data/outbreak_data/outbreak_data_w_random_pseudoabsences.csv")
+write_csv(d.popweighted, file = "data/outbreak_data/outbreak_data_w_popweighted_pseudoabsences.csv")
+write_csv(d.travel, file = "data/outbreak_data/outbreak_data_w_travel_pseudoabsences.csv")
