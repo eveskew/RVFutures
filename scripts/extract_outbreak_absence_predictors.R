@@ -26,10 +26,10 @@ monthly.predictors <- read_csv("data/predictor_flat_files/monthly_predictors_his
 
 # Import outbreak/absence data and add on predictors
 
-d.random <- read_csv("data/outbreak_data/data_random_pseudoabsences.csv") %>%
+d.random <- read_csv("data/outbreak_data/outbreak_data_w_random_pseudoabsences.csv") %>%
   rename(
-    year = OB_Yr,
-    month = OB_Mo,
+    year = outbreak_year,
+    month = outbreak_month,
     x = GPS_x,
     y = GPS_y
   )
@@ -47,10 +47,10 @@ d.random <- d.random %>%
   left_join(., monthly.predictors, by = c("grid_cell", "year", "month"))
 
 
-d.popweighted <- read_csv("data/outbreak_data/data_popweighted_pseudoabsences.csv") %>%
+d.popweighted <- read_csv("data/outbreak_data/outbreak_data_w_popweighted_pseudoabsences.csv") %>%
   rename(
-    year = OB_Yr,
-    month = OB_Mo,
+    year = outbreak_year,
+    month = outbreak_month,
     x = GPS_x,
     y = GPS_y
   )
@@ -151,7 +151,7 @@ ggplot() +
 
 # Save data frames with extracted predictors
 
-cols.to.exclude <- c(13, 15:17, 25:75)
+cols.to.exclude <- c(14:19, 23)
 
 d.random %>%
   select(!all_of(cols.to.exclude)) %>%
@@ -160,7 +160,7 @@ d.random %>%
     longitude = x,
     latitude = y
   ) %>%
-  write_csv(file = "data/outbreak_data/outbreak_random_predictors.csv")
+  write_csv(file = "data/outbreak_data/outbreak_data_w_random_pseudoabsences_predictors.csv")
 
 d.popweighted %>%
   select(!all_of(cols.to.exclude)) %>%
@@ -169,4 +169,4 @@ d.popweighted %>%
     longitude = x,
     latitude = y
   ) %>%
-  write_csv(file = "data/outbreak_data/outbreak_popweighted_predictors.csv")
+  write_csv(file = "data/outbreak_data/outbreak_data_w_popweighted_pseudoabsences_predictors.csv")
