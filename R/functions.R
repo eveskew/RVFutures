@@ -145,7 +145,7 @@ extract_humanpop_raster <- function(dataframe, raster) {
     
     # Get relevant data from the observation
     row <- dataframe[i, ]
-    year <- row$OB_Yr
+    year <- row$outbreak_year
     # NOTE: Using 2020 data for any years past 2020
     year <- ifelse(year > 2020, 2020, year)
     
@@ -193,8 +193,8 @@ extract_NDVI_raster <- function(dataframe, raster) {
     
     # Get relevant data from the observation
     row <- dataframe[i, ]
-    year <- row$OB_Yr
-    month <- month.table[row$OB_Mo]
+    year <- row$outbreak_year
+    month <- month.table[row$outbreak_month]
     
     # Subset to the correct NDVI raster layer
     layer <- raster[[paste0("Monthly_NDVI_", year, "_", month)]]
@@ -233,8 +233,8 @@ extract_precipitation_raster <- function(dataframe, raster) {
     
     # Get relevant data from the observation
     row <- dataframe[i, ]
-    year <- row$OB_Yr
-    month <- month.table[row$OB_Mo]
+    year <- row$outbreak_year
+    month <- month.table[row$outbreak_month]
     
     # Subset to the correct precipitation raster layer
     layer <- raster[[paste0("chirps-v2.0.", year, ".", month)]]
@@ -273,8 +273,8 @@ extract_temperature_raster <- function(dataframe, raster) {
     
     # Get relevant data from the observation
     row <- dataframe[i, ]
-    year <- row$OB_Yr
-    month <- month.table[row$OB_Mo]
+    year <- row$outbreak_year
+    month <- month.table[row$outbreak_month]
     
     # Subset to the correct temperature raster layer
     layer <- raster[[paste0("LST_Day_CMG_", year, "_", month)]]
@@ -425,50 +425,90 @@ generate_predictor_report <- function(dataframe, type, filename) {
 
 
 
-# Function to pull centroid coordinates based on known admin level 2 locations
+# Function to pull centroid coordinates based on known admin level locations
 
-pull_centroids_from_adm2 <- function(dataframe) {
+pull_centroids_from_adm <- function(dataframe) {
+  
+  # Pull admin level 1 maps for all study countries
+  kenya.adm1 <- rgeoboundaries::geoboundaries(country = "Kenya", "adm1") %>%
+    sf::st_transform(., 4326)
+  uganda.adm1 <- rgeoboundaries::geoboundaries(country = "Uganda", "adm1") %>%
+    sf::st_transform(., 4326)
+  tanzania.adm1 <- rgeoboundaries::geoboundaries(country = "Tanzania", "adm1") %>%
+    sf::st_transform(., 4326)
   
   # Pull admin level 2 maps for all study countries
   kenya.adm2 <- rgeoboundaries::geoboundaries(country = "Kenya", "adm2") %>%
     sf::st_transform(., 4326)
-  uganda.adm2 <- rgeoboundaries::geoboundaries(country = "Uganda", "adm2") %>%
+  uganda.adm2 <- rgeoboundaries::geoboundaries(country = "Uganda", "adm3") %>%
     sf::st_transform(., 4326)
   tanzania.adm2 <- rgeoboundaries::geoboundaries(country = "Tanzania", "adm2") %>%
     sf::st_transform(., 4326)
   
   for(i in 1:nrow(dataframe)) {
     
+    print(i)
+    
     # If GPS information is missing
     if (is.na(dataframe$GPS_x[i])) {
       
-      # Generate a character vector with all known admin level 2 locations
-      query <- dataframe$ADM2[i] %>%
-        stringr::str_replace(., " District", "") %>%
-        stringr::str_split(., pattern = ", ") %>%
-        purrr::simplify()
+      # If admin level 2 information is available
+      if (!is.na(dataframe$ADM2[i])) {
+        
+        # Generate a character vector with all known admin level 2 locations
+        query <- dataframe$ADM2[i] %>%
+          stringr::str_replace(., " District| Subcounty", "") %>%
+          stringr::str_split(pattern = ", ") %>%
+          purrr::simplify()
+        
+        # Load the appropriate country map
+        if (dataframe$country[i] == "Kenya") {map <- kenya.adm2}
+        if (dataframe$country[i] == "Uganda") {map <- uganda.adm2}
+        if (dataframe$country[i] == "Tanzania") {map <- tanzania.adm2}
+        
+        # Subset the map to the appropriate admin level 2 areas
+        map.subset <- map %>%
+          dplyr::filter(shapeName %in% query)
+        
+        # Make sure all the relevant admin level 2 areas have been pulled
+        assertthat::assert_that(length(query) == nrow(map.subset))
+        
+        # Pull the map subset centroid
+        point <- sf::st_centroid(sf::st_union(map.subset))
+        
+        # Assign the centroid coordinates to the missing GPS cells
+        dataframe$GPS_x[i] <- sf::st_coordinates(point)[,1]
+        dataframe$GPS_y[i] <- sf::st_coordinates(point)[,2]
+      }
       
-      # Load the appropriate country map
-      if (dataframe$country[i] == "Kenya") {map <- kenya.adm2}
-      if (dataframe$country[i] == "Uganda") {map <- uganda.adm2}
-      if (dataframe$country[i] == "Tanzania") {map <- tanzania.adm2}
-      
-      # Subset the map to the appropriate admin level 2 areas
-      map.subset <- map %>%
-        dplyr::filter(shapeName %in% query)
-      
-      # Make sure all the relevant admin level 2 areas have been pulled
-      assertthat::assert_that(length(query) == nrow(map.subset))
-      
-      # Union the map subset
-      map.subset <- sf::st_union(map.subset)
-      
-      # Pull the map subset centroid
-      point <- sf::st_centroid(map.subset)
-      
-      # Assign the centroid coordinates to the missing GPS cells
-      dataframe$GPS_x[i] <- sf::st_coordinates(point)[,1]
-      dataframe$GPS_y[i] <- sf::st_coordinates(point)[,2]
+      # If only admin level 1 information is available
+      if (!is.na(dataframe$ADM1[i]) & is.na(dataframe$ADM2[i])) {
+        
+        # Generate a character vector with all known admin level 1 locations
+        query <- dataframe$ADM1[i] %>%
+          stringr::str_replace(., " County| Region", "") %>%
+          stringr::str_split(pattern = ", ") %>%
+          purrr::simplify()
+        
+        # Load the appropriate country map
+        if (dataframe$country[i] == "Kenya") {map <- kenya.adm1}
+        if (dataframe$country[i] == "Uganda") {map <- uganda.adm1}
+        if (dataframe$country[i] == "Tanzania") {map <- tanzania.adm1}
+        
+        # Subset the map to the appropriate admin level 1 areas
+        map.subset <- map %>%
+          dplyr::filter(shapeName %in% query)
+        
+        # Make sure all the relevant admin level 1 areas have been pulled
+        assertthat::assert_that(length(query) == nrow(map.subset))
+        
+        # Pull the map subset centroid
+        point <- sf::st_centroid(sf::st_union(map.subset))
+        
+        # Assign the centroid coordinates to the missing GPS cells
+        dataframe$GPS_x[i] <- sf::st_coordinates(point)[,1]
+        dataframe$GPS_y[i] <- sf::st_coordinates(point)[,2]
+      }
     }
   }
   
@@ -477,20 +517,31 @@ pull_centroids_from_adm2 <- function(dataframe) {
 
 
 
-# Function to pull random coordinates based on known admin level 2 locations
+# Function to pull random coordinates based on known admin level locations
 
-pull_random_points_from_adm2 <- function(dataframe) {
+pull_random_points_from_adm <- function(dataframe) {
   
   # Pull in lakes layers so that maps can be differenced, preventing random 
   # coordinates from occurring over water
   lakes <- readRDS("data/rasters/hydrology/saved_objects/lakes_east_africa_5.rds") %>%
     sf::st_union()
   
+  # Pull admin level 1 maps for all study countries, differencing the lakes
+  kenya.adm1 <- rgeoboundaries::geoboundaries(country = "Kenya", "adm1") %>%
+    sf::st_transform(., 4326) %>%
+    sf::st_difference(., lakes)
+  uganda.adm1 <- rgeoboundaries::geoboundaries(country = "Uganda", "adm1") %>%
+    sf::st_transform(., 4326) %>%
+    sf::st_difference(., lakes)
+  tanzania.adm1 <- rgeoboundaries::geoboundaries(country = "Tanzania", "adm1") %>%
+    sf::st_transform(., 4326) %>%
+    sf::st_difference(., lakes)
+  
   # Pull admin level 2 maps for all study countries, differencing the lakes
   kenya.adm2 <- rgeoboundaries::geoboundaries(country = "Kenya", "adm2") %>%
     sf::st_transform(., 4326) %>%
     sf::st_difference(., lakes)
-  uganda.adm2 <- rgeoboundaries::geoboundaries(country = "Uganda", "adm2") %>%
+  uganda.adm2 <- rgeoboundaries::geoboundaries(country = "Uganda", "adm3") %>%
     sf::st_transform(., 4326) %>%
     sf::st_difference(., lakes)
   tanzania.adm2 <- rgeoboundaries::geoboundaries(country = "Tanzania", "adm2") %>%
@@ -499,36 +550,68 @@ pull_random_points_from_adm2 <- function(dataframe) {
   
   for(i in 1:nrow(dataframe)) {
     
+    print(i)
+    
     # If GPS information is missing
     if (is.na(dataframe$GPS_x[i])) {
       
-      # Generate a character vector with all known admin level 2 locations
-      query <- dataframe$ADM2[i] %>%
-        stringr::str_replace(., " District", "") %>%
-        stringr::str_split(., pattern = ", ") %>%
-        purrr::simplify()
+      # If admin level 2 information is available
+      if (!is.na(dataframe$ADM2[i])) {
+        
+        # Generate a character vector with all known admin level 2 locations
+        query <- dataframe$ADM2[i] %>%
+          stringr::str_replace(., " District| Subcounty", "") %>%
+          stringr::str_split(pattern = ", ") %>%
+          purrr::simplify()
+        
+        # Load the appropriate country map
+        if (dataframe$country[i] == "Kenya") {map <- kenya.adm2}
+        if (dataframe$country[i] == "Uganda") {map <- uganda.adm2}
+        if (dataframe$country[i] == "Tanzania") {map <- tanzania.adm2}
+        
+        # Subset the map to the appropriate admin level 2 areas
+        map.subset <- map %>%
+          dplyr::filter(shapeName %in% query)
+        
+        # Make sure all the relevant admin level 2 areas have been pulled
+        assertthat::assert_that(length(query) == nrow(map.subset))
+        
+        # Pull a random set of coordinates from the map subset
+        point <- sf::st_sample(sf::st_union(map.subset), size = 1)
+        
+        # Assign the random coordinates to the missing GPS cells
+        dataframe$GPS_x[i] <- sf::st_coordinates(point)[,1]
+        dataframe$GPS_y[i] <- sf::st_coordinates(point)[,2]
+      }
       
-      # Load the appropriate country map
-      if (dataframe$country[i] == "Kenya") {map <- kenya.adm2}
-      if (dataframe$country[i] == "Uganda") {map <- uganda.adm2}
-      if (dataframe$country[i] == "Tanzania") {map <- tanzania.adm2}
-      
-      # Subset the map to the appropriate admin level 2 areas
-      map.subset <- map %>%
-        dplyr::filter(shapeName %in% query)
-      
-      # Make sure all the relevant admin level 2 areas have been pulled
-      assertthat::assert_that(length(query) == nrow(map.subset))
-      
-      # Union the map subset
-      map.subset <- sf::st_union(map.subset)
-      
-      # Pull a random set of coordinates from the map subset
-      point <- sf::st_sample(map.subset, size = 1)
-      
-      # Assign the random coordinates to the missing GPS cells
-      dataframe$GPS_x[i] <- sf::st_coordinates(point)[,1]
-      dataframe$GPS_y[i] <- sf::st_coordinates(point)[,2]
+      # If only admin level 1 information is available
+      if (!is.na(dataframe$ADM1[i]) & is.na(dataframe$ADM2[i])) {
+        
+        # Generate a character vector with all known admin level 1 locations
+        query <- dataframe$ADM1[i] %>%
+          stringr::str_replace(., " County| Region", "") %>%
+          stringr::str_split(pattern = ", ") %>%
+          purrr::simplify()
+        
+        # Load the appropriate country map
+        if (dataframe$country[i] == "Kenya") {map <- kenya.adm1}
+        if (dataframe$country[i] == "Uganda") {map <- uganda.adm1}
+        if (dataframe$country[i] == "Tanzania") {map <- tanzania.adm1}
+        
+        # Subset the map to the appropriate admin level 1 areas
+        map.subset <- map %>%
+          dplyr::filter(shapeName %in% query)
+        
+        # Make sure all the relevant admin level 1 areas have been pulled
+        assertthat::assert_that(length(query) == nrow(map.subset))
+        
+        # Pull a random set of coordinates from the map subset
+        point <- sf::st_sample(sf::st_union(map.subset), size = 1)
+        
+        # Assign the random coordinates to the missing GPS cells
+        dataframe$GPS_x[i] <- sf::st_coordinates(point)[,1]
+        dataframe$GPS_y[i] <- sf::st_coordinates(point)[,2]
+      }
     }
   }
   
