@@ -2,6 +2,7 @@
 .Rhistory
 .Rproj.user
 
+data/outbreak_data_workspace/*
 data/prediction_deltas/*
 data/prediction_rasters/*
 data/predictor_flat_files/*
