@@ -26,9 +26,6 @@ static.predictors <- read_csv("data/predictor_flat_files/static_predictors.csv")
 yearly.predictors <- read_csv("data/predictor_flat_files/yearly_predictors_historical.csv")
 monthly.predictors <- read_csv("data/predictor_flat_files/monthly_predictors_historical_weather.csv")
 
-# For retrodictions, set travel time to healthcare to 0
-static.predictors$travel_time_to_healthcare <- rep(0, nrow(static.predictors))
-
 # Loop through years
 
 for(year in c(2008:2021)) {
@@ -58,9 +55,8 @@ for(year in c(2008:2021)) {
       longitude = rep(NA, nrow(.)),
       latitude = rep(NA, nrow(.)),
       RVF_presence = rep(NA, nrow(.)),
-      Hu_Cs = rep(NA, nrow(.)),
       month_numeric = rep(NA, nrow(.)),
-      year_group = rep(NA, nrow(.)),
+      training_group = rep(NA, nrow(.)),
       testing_data = rep(NA, nrow(.))
     )
   
@@ -94,9 +90,6 @@ static.predictors <- read_csv("data/predictor_flat_files/static_predictors.csv")
 yearly.predictors <- read_csv("data/predictor_flat_files/yearly_predictors_historical.csv")
 monthly.predictors <- read_csv("data/predictor_flat_files/monthly_predictors_historical_climate.csv")
 
-# For climate scenario predictions, set travel time to healthcare to 0
-static.predictors$travel_time_to_healthcare <- rep(0, nrow(static.predictors))
-
 # Import a raster to serve as a template
 r <- terra::rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
 
@@ -124,9 +117,8 @@ d <- d %>%
     longitude = rep(NA, nrow(.)),
     latitude = rep(NA, nrow(.)),
     RVF_presence = rep(NA, nrow(.)),
-    Hu_Cs = rep(NA, nrow(.)),
     month_numeric = rep(NA, nrow(.)),
-    year_group = rep(NA, nrow(.)),
+    training_group = rep(NA, nrow(.)),
     testing_data = rep(NA, nrow(.))
   )
 
@@ -209,9 +201,8 @@ for(g in gcms) {
           longitude = rep(NA, nrow(.)),
           latitude = rep(NA, nrow(.)),
           RVF_presence = rep(NA, nrow(.)),
-          Hu_Cs = rep(NA, nrow(.)),
           month_numeric = rep(NA, nrow(.)),
-          year_group = rep(NA, nrow(.)),
+          training_group = rep(NA, nrow(.)),
           testing_data = rep(NA, nrow(.))
         )
       
