@@ -103,7 +103,7 @@ vi %>%
   ) +
   geom_col(width = 0.1) +
   geom_point(size = 3) +
-  scale_x_continuous(breaks = seq(from = 0, to = 0.1, by = 0.02), limits = c(0, 0.1)) +
+  scale_x_continuous(breaks = seq(from = 0, to = 0.12, by = 0.03), limits = c(0, 0.12)) +
   xlab("Variable Importance") +
   ylab("") +
   scale_fill_brewer(
@@ -159,7 +159,7 @@ pdp$color <- "black"
 # Loop through subsets of the predictor variables so that we get separate 
 # plots with reasonable numbers of facets
 vars.list <- list(
-  1:10, 11:20, 21:30, 31:34
+  1:8, 9:16, 17:24, 25:31
 )
 
 for(i in 1:length(vars.list)) {
@@ -180,7 +180,7 @@ for(i in 1:length(vars.list)) {
   )
   p <- p +
     ylab("average relative likelihood of RVF") +
-    ylim(0, 0.01) +
+    ylim(0, 0.1) +
     theme(
       strip.text.x = element_text(size = 11)
     )
@@ -189,6 +189,6 @@ for(i in 1:length(vars.list)) {
   ggsave(
     p,
     filename = paste0("outputs/figures/pdp", i, ".jpg"),
-    width = 7, height = length(vars)
+    width = 7, height = ceiling(length(vars)/2) * 2
   )
 }
