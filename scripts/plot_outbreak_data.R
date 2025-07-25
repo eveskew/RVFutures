@@ -154,7 +154,7 @@ plot(hill.multi, col = grey(1:100/100))
 
 # Import RVF outbreak data
 
-d <- read_csv("data/outbreak_data/EC_RVF_clean_April27.csv") %>%
+d <- read_csv("data/outbreak_data/outbreak_data_centroid_filled.csv") %>%
   st_as_sf(coords = c("GPS_x", "GPS_y"), crs = st_crs(east.africa))
 
 #==============================================================================
@@ -201,7 +201,7 @@ ggplot() +
     fill = NA,
     linewidth = 1
   ) +
-  geom_sf(data = d, aes(size = CASES), color = alpha("darkred", 0.5)) +
+  geom_sf(data = d, size = 4, color = alpha("darkred", 0.5)) +
   annotation_scale(
     location = "bl",
     bar_cols = c("black", "white"),
@@ -279,7 +279,7 @@ ggplot() +
     fill = NA,
     linewidth = 1
   ) +
-  geom_sf(data = d, aes(size = CASES), color = alpha("darkred", 0.5)) +
+  geom_sf(data = d, size = 4, color = alpha("darkred", 0.5)) +
   annotation_scale(
     location = "bl",
     bar_cols = c("black", "white"),
@@ -320,8 +320,8 @@ knitr::plot_crop(filename)
 
 ggplot() +
   geom_sf(data = east.africa, fill = alpha("darkseagreen", 0.2)) +
-  geom_sf(data = d, aes(size = CASES), color = alpha("darkred", 0.5)) +
-  facet_wrap(~OB_Yr, nrow = 3) +
+  geom_sf(data = d, size = 2, color = alpha("darkred", 0.5)) +
+  facet_wrap(~outbreak_year, nrow = 3) +
   theme_minimal()
 
 
@@ -337,7 +337,7 @@ ggplot() +
     fill = NA,
     linewidth = 0.5
   ) +
-  geom_sf(data = d, aes(size = CASES), color = alpha("darkred", 0.5)) +
+  geom_sf(data = d, size = 4, color = alpha("darkred", 0.5)) +
   theme_void() +
   theme(legend.position = "none")
 

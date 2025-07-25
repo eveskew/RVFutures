@@ -21,7 +21,7 @@ lakes.10 <- readRDS("data/rasters/hydrology/saved_objects/lakes_east_africa_10.r
 
 # Import the population-weighted background data
 d.popweighted <- read_csv(
-  file = "data/outbreak_data/data_popweighted_pseudoabsences.csv"
+  file = "data/outbreak_data/outbreak_data_w_popweighted_pseudoabsences.csv"
 )
 
 d.popweighted.sf <- d.popweighted %>%
@@ -65,7 +65,12 @@ b <- ggplot() +
   geom_spatraster(data = r.mean) +
   geom_sf(data = east.africa, fill = NA) +
   geom_sf(data = lakes.10, fill = "lightblue") +
-  scale_fill_viridis_c(trans = "log10", na.value = "white", name = "Human\npopulation\ndensity") +
+  scale_fill_viridis_c(
+    trans = scales::pseudo_log_trans(base = 10), 
+    breaks = c(1, 10, 100, 1000, 10000),
+    na.value = "white", 
+    name = "Human\npopulation\ndensity"
+  ) +
   theme_void()
 
 plot_grid(
