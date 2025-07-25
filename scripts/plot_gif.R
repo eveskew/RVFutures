@@ -3,6 +3,7 @@ library(rnaturalearth)
 library(sf)
 library(terra)
 library(tidyterra)
+library(magick)
 
 source("R/functions.R")
 
@@ -32,15 +33,14 @@ r.mask <- mask(r, east.africa)
 tss.cutoff <- readRDS("data/misc/tss.cutoff.rds")
 
 # Define plotting limits
-low <- -6
+low <- -4
 high <- 0
 
 list.val <- list(
-  "-6" = -6, 
-  "-5" = -5,
   "-4" = -4,
   "-3" = -3,
   "-2" = -2,
+  "-1" = -1,
   "0" = 0
 )
 
@@ -102,5 +102,5 @@ img.animated <- image_animate(img.joined, fps = 2)
 # Save to disk
 image_write(
   image = img.animated,
-  path = "outputs/gif/test.gif"
+  path = "outputs/gif/RVF_historical_risk.gif"
 )
