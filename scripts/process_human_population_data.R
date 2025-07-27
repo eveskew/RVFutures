@@ -12,7 +12,7 @@ source("R/functions.R")
 # Kenya, Uganda, and Tanzania, then merge and save the merged raster file
 
 years <- as.character(2000:2020)
-x <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
+x <- rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
 
 # Loop through all years
 for(i in years) {
@@ -106,7 +106,7 @@ years <- as.character(
   c(2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2065, 2070)
 )
 east.africa <- load_country_map()
-x <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
+x <- rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
 
 # Loop through all years
 for(i in years) {
@@ -134,10 +134,16 @@ for(i in years) {
   )
   
   # Import the rasters
+  # Having problem with newer update for terra, figured out correct extent
+  # using QGIS and manually assigning that
   r.ssp1 <- terra::rast(file.ssp1)
+  set.ext(r.ssp1, value = c(-180, 180, -72.0004168012899868, 83.9995831987100132))
   r.ssp2 <- terra::rast(file.ssp2)
+  set.ext(r.ssp2, value = c(-180, 180, -72.0004168012899868, 83.9995831987100132))
   r.ssp3 <- terra::rast(file.ssp3)
+  set.ext(r.ssp3, value = c(-180, 180, -72.0004168012899868, 83.9995831987100132))
   r.ssp5 <- terra::rast(file.ssp5)
+  set.ext(r.ssp5, value = c(-180, 180, -72.0004168012899868, 83.9995831987100132))
   
   # Reproject the rasters to EPSG 4326, if needed
   if(crs(r.ssp1, describe = TRUE)$code != "4326" | is.na(crs(r.ssp1, describe = TRUE)$code)) {r.ssp1 <- project(x = r.ssp1, y = "epsg:4326")}

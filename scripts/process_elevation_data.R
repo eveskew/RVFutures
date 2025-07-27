@@ -27,7 +27,7 @@ if(crs(vrt, describe = TRUE)$code != "4326" | is.na(crs(vrt, describe = TRUE)$co
 slope <- terrain(vrt, v = "slope")
 
 # Load another processed predictor raster for resampling
-x <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
+x <- rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
 
 # Resample to the same resolution and extent
 vrt.resample <- resample(vrt, x, "bilinear")

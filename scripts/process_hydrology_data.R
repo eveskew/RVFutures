@@ -98,7 +98,7 @@ saveRDS(rivers.10.mask, file = "data/rasters/hydrology/saved_objects/rivers_east
 # grid cell centroids to the various hydrology features
 
 # Load in precipitation raster as a reference
-r <- terra::rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
+r <- terra::rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
 
 # Make the East Africa map into a grid matching the extent and resolution of 
 # the raster

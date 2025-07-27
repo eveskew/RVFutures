@@ -23,7 +23,7 @@ r <- rast(files)
 if(crs(r, describe = TRUE)$code != "4326" | is.na(crs(r, describe = TRUE)$code)) {r <- project(x = r, y = "epsg:4326")}
 
 # Load another processed predictor raster for resampling
-x <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
+x <- rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
 
 # Resample to the same resolution and extent
 r.r <- resample(r, x, "bilinear")

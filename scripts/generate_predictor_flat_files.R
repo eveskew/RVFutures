@@ -81,15 +81,15 @@ d$travel_time_to_healthcare <- as.numeric(values(r))
 # Add animal density data to the data frame
 
 # Load in cattle density file
-r <- rast("data/rasters/livestock/processed/Ct_2015_Aw_density_2.5min.tif")
+r <- rast("data/rasters/livestock/processed/Ct_2015_Da_density_2.5min.tif")
 d$cattle_density <- as.numeric(values(r))
 
 # Load in goat density file
-r <- rast("data/rasters/livestock/processed/Gt_2015_Aw_density_2.5min.tif")
+r <- rast("data/rasters/livestock/processed/Gt_2015_Da_density_2.5min.tif")
 d$goat_density <- as.numeric(values(r))
 
 # Load in sheep density file
-r <- rast("data/rasters/livestock/processed/Sh_2015_Aw_density_2.5min.tif")
+r <- rast("data/rasters/livestock/processed/Sh_2015_Da_density_2.5min.tif")
 d$sheep_density <- as.numeric(values(r))
 
 
@@ -370,14 +370,14 @@ r <- rast(files)
 
 d$monthly_precip <- NA
 
-for(year in 2007:2021) {
+for(year in 2007:2022) {
   
   for(month in month.name) {
     
     print(c(year, month))
     
     # Subset to the correct raster layer
-    layer <- r[[paste0("wc2.1_2.5m_prec_", year, "-", month.table[month])]]
+    layer <- r[[paste0("wc2.1_cruts4.09_2.5m_prec_", year, "-", month.table[month])]]
     
     # Extract values
     d[d$year == year & d$month == month, "monthly_precip"] <- as.numeric(values(layer))
@@ -401,20 +401,20 @@ r <- rast(files)
 d$monthly_tmax <- NA
 d$monthly_tmin <- NA
 
-for(year in 2007:2021) {
+for(year in 2007:2022) {
   
   for(month in month.name) {
     
     print(c(year, month))
     
     # Subset to the correct raster layer for tmax
-    layer <- r[[paste0("wc2.1_2.5m_tmax_", year, "-", month.table[month])]]
+    layer <- r[[paste0("wc2.1_cruts4.09_2.5m_tmax_", year, "-", month.table[month])]]
     
     # Extract values
     d[d$year == year & d$month == month, "monthly_tmax"] <- as.numeric(values(layer))
     
     # Subset to the correct raster layer for tmin
-    layer <- r[[paste0("wc2.1_2.5m_tmin_", year, "-", month.table[month])]]
+    layer <- r[[paste0("wc2.1_cruts4.09_2.5m_tmin_", year, "-", month.table[month])]]
     
     # Extract values
     d[d$year == year & d$month == month, "monthly_tmin"] <- as.numeric(values(layer))

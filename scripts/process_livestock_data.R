@@ -4,7 +4,6 @@ library(tidyterra)
 library(assertthat)
 
 source("R/functions.R")
-unlink("data/rasters/livestock/processed", recursive = TRUE)
 
 #==============================================================================
 
@@ -15,7 +14,7 @@ unlink("data/rasters/livestock/processed", recursive = TRUE)
 # doing the resampling.
 
 east.africa <- load_country_map()
-x <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
+x <- rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
 
 if(!dir.exists("data/rasters/livestock/processed")) {
   dir.create("data/rasters/livestock/processed")
