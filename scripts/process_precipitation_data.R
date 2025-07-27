@@ -87,12 +87,12 @@ for(i in files) {
 # month's data as a layer
 files <- list.files(
   path = "data/rasters/precipitation/processed",
-  pattern = "wc.*_200[8-9]|wc.*_201[0-9]|wc.*_202[0-3]",
+  pattern = "wc.*_200[8-9]|wc.*_201[0-9]|wc.*_202[0-2]",
   full.names = TRUE
 )
 
 r <- rast(files)
-assert_that(dim(r)[3] == 14 * 12)
+assert_that(dim(r)[3] == 15 * 12)
 
 
 # Plot and save the precipitation raster data
@@ -116,8 +116,8 @@ ggsave(
 
 
 # Plot and save precipitation raster representing the average yearly rainfall
-# from 2008-2021
-index <- rep(1:14, each = 12)
+# from 2008-2022
+index <- rep(1:15, each = 12)
 r.yearly <- tapp(r, index = index, fun = sum)
 r.yearly.mean <- mean(r.yearly)
 
@@ -129,7 +129,7 @@ p <- ggplot() +
 
 ggsave(
   p,
-  filename = "outputs/predictor_layers/precipitation_yearly_average_2008-2021.jpg",
+  filename = "outputs/predictor_layers/precipitation_yearly_average_2008-2022.jpg",
   width = 1000,
   height = 1000,
   units = "px"
@@ -142,12 +142,12 @@ ggsave(
 # existing weather data and a linear projection method
 files <- list.files(
   path = "data/rasters/precipitation/processed",
-  pattern = "wc.*_200[0-9]|wc.*_201[0-9]|wc.*_202[0-3]",
+  pattern = "wc.*_200[0-9]|wc.*_201[0-9]|wc.*_202[0-4]",
   full.names = TRUE
 )
 
 r <- rast(files)
-assert_that(dim(r)[3] == 22 * 12)
+assert_that(dim(r)[3] == 25 * 12)
 
 months <- c(
   "01", "02", "03", "04", "05", "06", 
@@ -165,20 +165,20 @@ for(month in months) {
   # Regress across the years
   x <- regress(r.sub, 1:nlyr(r.sub), na.rm = TRUE)
   
-  # Generate raster layers for 2024-2050 and save them
-  for(year in 2024:2050) {
+  # Generate raster layers for 2025-2050 and save them
+  for(year in 2025:2050) {
     
-    # writeRaster(
-    #   generate_raster_projection(
-    #     regression_raster = x,
-    #     first_year_of_data = first.data.year,
-    #     projection_year = year,
-    #     lower_clamp = 0,
-    #     layer_name = paste0("linear_projection_", year, "-", month)
-    #   ), 
-    #   paste0("data/rasters/precipitation/processed/linear_projection_2.5min_", year, "-", month, ".tif"),
-    #   overwrite = TRUE
-    # )
+    writeRaster(
+      generate_raster_projection(
+        regression_raster = x,
+        first_year_of_data = first.data.year,
+        projection_year = year,
+        lower_clamp = 0,
+        layer_name = paste0("linear_projection_", year, "-", month)
+      ),
+      paste0("data/rasters/precipitation/processed/linear_projection_2.5min_", year, "-", month, ".tif"),
+      overwrite = TRUE
+    )
   }
 }
 
@@ -189,7 +189,7 @@ for(month in months) {
 # raster stack with each month's data as a layer
 obs.files <- list.files(
   path = "data/rasters/precipitation/processed",
-  pattern = "wc.*_200[0-9]|wc.*_201[0-9]|wc.*_202[0-3]",
+  pattern = "wc.*_200[0-9]|wc.*_201[0-9]|wc.*_202[0-4]",
   full.names = TRUE
 )
 proj.files <- list.files(
@@ -200,7 +200,7 @@ proj.files <- list.files(
 files <- c(obs.files, proj.files)
 
 r <- rast(files)
-assert_that(dim(r)[3] == 49 * 12)
+assert_that(dim(r)[3] == 51 * 12)
 
 r.sub <- r %>%
   select(matches("2000|2010|2020|2030|2040|2050"))
@@ -212,13 +212,13 @@ p <- ggplot() +
   facet_wrap(~lyr, ncol = 12) +
   theme_void()
 
-ggsave(
-  p,
-  filename = "outputs/predictor_layers/precipitation_projected.jpg",
-  width = 8000,
-  height = 6000,
-  units = "px"
-)
+# ggsave(
+#   p,
+#   filename = "outputs/predictor_layers/precipitation_projected.jpg",
+#   width = 8000,
+#   height = 6000,
+#   units = "px"
+# )
 
 #==============================================================================
 
@@ -230,8 +230,10 @@ r.sub <- r %>%
   select(matches("-01"))
 
 facet.names <- c(
-  `wc2.1_2.5m_prec_2010-01` = "January 2010",
-  `wc2.1_2.5m_prec_2020-01` = "January 2020",
+  `wc2.1_cruts4.09_2.5m_prec_2005-01` = "January 2005",
+  `wc2.1_cruts4.09_2.5m_prec_2010-01` = "January 2010",
+  `wc2.1_cruts4.09_2.5m_prec_2015-01` = "January 2015",
+  `wc2.1_cruts4.09_2.5m_prec_2020-01` = "January 2020",
   `linear_projection_2025-01` = "January 2025",
   `linear_projection_2030-01` = "January 2030",
   `linear_projection_2035-01` = "January 2035",
@@ -241,7 +243,7 @@ facet.names <- c(
 )
 
 ggplot() +
-  geom_spatraster(data = select(r.sub, matches("2010|2020|2025|2030|2035|2040|2045|2050"))) +
+  geom_spatraster(data = select(r.sub, matches("2005|2010|2015|2020|2025|2030|2035|2040|2045|2050"))) +
   scale_fill_distiller(palette = "Spectral", na.value = "white") +
   facet_wrap(~lyr, ncol = 5, labeller = as_labeller(facet.names)) +
   theme_void() +
@@ -259,7 +261,7 @@ tidy <- r.sub %>%
   tidyr::pivot_longer(everything(), names_to = "layer", values_to = "rainfall") %>%
   # name the pixels and assign year variable
   mutate(
-    pixel = rep(1:(dim(r.sub)[1]*dim(r.sub)[2]), each = 49),
+    pixel = rep(1:(dim(r.sub)[1]*dim(r.sub)[2]), each = 51),
     year = str_extract(layer, "_[1-9]...-") %>%
       str_replace("_", "") %>%
       str_replace("-", "") %>%
@@ -272,10 +274,10 @@ test.dat <- tidy %>%
 
 # Plot observed data, the trend line, and the projections made for that pixel
 ggplot() +
-  geom_point(data = test.dat[1:22, ], aes(x = year, y = rainfall)) +
-  geom_smooth(data = test.dat[1:22, ], aes(x = year, y = rainfall), method = "lm", se = FALSE, col = "black") +
-  geom_point(data = test.dat[23:49, ], aes(x = year, y = rainfall), col = "red") +
-  geom_line(data = test.dat[23:49, ], aes(x = year, y = rainfall), col = "red", lty = 2) +
+  geom_point(data = test.dat[1:25, ], aes(x = year, y = rainfall)) +
+  geom_smooth(data = test.dat[1:25, ], aes(x = year, y = rainfall), method = "lm", se = FALSE, col = "black") +
+  geom_point(data = test.dat[26:51, ], aes(x = year, y = rainfall), col = "red") +
+  geom_line(data = test.dat[26:51, ], aes(x = year, y = rainfall), col = "red", lty = 2) +
   ggtitle("January precipitation through time (raster pixel 70000)") +
   ylab("Precipitation (mm)") +
   theme_minimal()
@@ -284,9 +286,9 @@ ggplot() +
 
 # Fit a linear model on the observed data from this pixel to confirm the projected
 # values
-m <- lm(rainfall ~ year, data = test.dat[1:22, ])
-predict(m, newdata = data.frame(year = 2024:2050))
-test.dat[23:49, ]
+m <- lm(rainfall ~ year, data = test.dat[1:25, ])
+predict(m, newdata = data.frame(year = 2025:2050))
+test.dat[26:51, ]
 
 #==============================================================================
 
@@ -347,7 +349,7 @@ r <- rast(files)
 # Generate data frame to track changes in precipitation variables over time
 d <- data.frame(
   year = as.numeric(str_extract(files, "[0-9]{4}")),
-  month = rep(months, times = 122),
+  month = rep(months, times = 125),
   gcm = str_extract(files, "(?<=prec_)[^,]+(?=_ssp)"),
   median_value = NA,
   mean_value = NA,
@@ -358,7 +360,7 @@ d <- data.frame(
     month = factor(month.name[as.numeric(month)], levels = month.name),
     type = case_when(
       year == 1985 ~ "Historical climate",
-      year %in% 2000:2023 ~ "Historical weather",
+      year %in% 2000:2024 ~ "Historical weather",
       year %in% c(2030, 2050, 2070) ~ str_extract(files, "ssp[0-9]{3}")
     ),
     type = str_replace(type, "ssp", "SSP"),
@@ -386,7 +388,7 @@ for(g in gcms) {
     ggplot(aes(x = year, y = mean_value, group = type, color = type)) +
     geom_point() +
     geom_line(linewidth = 0.2) +
-    geom_vline(xintercept = 2021, linetype = 2) +
+    geom_vline(xintercept = 2024, linetype = 2) +
     xlab("") +
     ylab("Mean precipitation across study region (mm)") +
     xlim(1980, 2080) +

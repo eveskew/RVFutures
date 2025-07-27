@@ -90,13 +90,13 @@ for(var in variables) {
   
   files <- list.files(
     path = "data/rasters/temperature/processed",
-    pattern = "wc.*_200[8-9]|wc.*_201[0-9]|wc.*_202[0-3]",
+    pattern = "wc.*_200[8-9]|wc.*_201[0-9]|wc.*_202[0-2]",
     full.names = TRUE
   )
   files <- files[str_detect(files, var)]
   
   r <- rast(files)
-  assert_that(dim(r)[3] == 14 * 12)
+  assert_that(dim(r)[3] == 15 * 12)
   
   # Plot and save the temperature raster data
   p <- ggplot() +
@@ -136,12 +136,12 @@ for(var in variables) {
   
   files <- list.files(
     path = "data/rasters/temperature/processed",
-    pattern = paste0("wc2.1_2.5m_", var, "_2"),
+    pattern = paste0("wc2.1_cruts4.09_2.5m_", var, "_2"),
     full.names = TRUE
   )
   
   r <- rast(files)
-  assert_that(dim(r)[3] == 22 * 12)
+  assert_that(dim(r)[3] == 25 * 12)
   
   for(month in months) {
     
@@ -152,21 +152,21 @@ for(var in variables) {
     # Regress across the years
     x <- regress(r.sub, 1:nlyr(r.sub), na.rm = TRUE)
     
-    # Generate predictor layers for 2024-2050 and save them
-    for(year in 2024:2050) {
+    # Generate predictor layers for 2025-2050 and save them
+    for(year in 2025:2050) {
       
-      # writeRaster(
-      #   generate_raster_projection(
-      #     regression_raster = x,
-      #     first_year_of_data = first.data.year,
-      #     projection_year = year,
-      #     lower_clamp = -20,
-      #     upper_clamp = 80,
-      #     layer_name = paste0("linear_projection_", var, "_", year, "-", month)
-      #   ), 
-      #   paste0("data/rasters/temperature/processed/linear_projection_2.5min_", var, "_", year, "-", month, ".tif"),
-      #   overwrite = TRUE
-      # )
+      writeRaster(
+        generate_raster_projection(
+          regression_raster = x,
+          first_year_of_data = first.data.year,
+          projection_year = year,
+          lower_clamp = -20,
+          upper_clamp = 80,
+          layer_name = paste0("linear_projection_", var, "_", year, "-", month)
+        ),
+        paste0("data/rasters/temperature/processed/linear_projection_2.5min_", var, "_", year, "-", month, ".tif"),
+        overwrite = TRUE
+      )
     }
   }
 }
@@ -182,7 +182,7 @@ for(var in variables) {
   
   obs.files <- list.files(
     path = "data/rasters/temperature/processed",
-    pattern = paste0("wc2.1_2.5m_", var, "_2"),
+    pattern = paste0("wc2.1_cruts4.09_2.5m_", var, "_2"),
     full.names = TRUE
   )
   proj.files <- list.files(
@@ -193,7 +193,7 @@ for(var in variables) {
   files <- c(obs.files, proj.files)
   
   r <- rast(files)
-  assert_that(dim(r)[3] == 49 * 12)
+  assert_that(dim(r)[3] == 51 * 12)
   
   r.sub <- r %>%
     select(matches("2000|2010|2020|2030|2040|2050"))
@@ -205,13 +205,13 @@ for(var in variables) {
     facet_wrap(~lyr, ncol = 12) +
     theme_void()
   
-  ggsave(
-    p,
-    filename = paste0("outputs/predictor_layers/", var, "_projected.jpg"),
-    width = 8000,
-    height = 6000,
-    units = "px"
-  )
+  # ggsave(
+  #   p,
+  #   filename = paste0("outputs/predictor_layers/", var, "_projected.jpg"),
+  #   width = 8000,
+  #   height = 6000,
+  #   units = "px"
+  # )
 }
 
 #==============================================================================
@@ -274,7 +274,7 @@ r <- rast(files)
 d <- data.frame(
   variable = str_extract(files, "(?<=2.5m_)[a-z]{4}(?=_)"),
   year = as.numeric(str_extract(files, "[0-9]{4}")),
-  month = rep(months, times = 244),
+  month = rep(months, times = 250),
   gcm = str_extract(files, "(?<=tm[a-z]{2}_)[^,]+(?=_ssp)"),
   median_value = NA,
   mean_value = NA
@@ -311,7 +311,7 @@ for(var in variables) {
       ggplot(aes(x = year, y = mean_value, group = type, color = type)) +
       geom_point() +
       geom_line(linewidth = 0.2) +
-      geom_vline(xintercept = 2021, linetype = 2) +
+      geom_vline(xintercept = 2024, linetype = 2) +
       xlab("") +
       ylab("Mean across study region") +
       xlim(1980, 2080) +
