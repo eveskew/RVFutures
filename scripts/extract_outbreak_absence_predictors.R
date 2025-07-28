@@ -14,7 +14,7 @@ east.africa <- load_country_map()
 
 # Import raster of the correct dimensions for reference
 
-r <- rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
+r <- rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
 
 
 # Import predictor files
