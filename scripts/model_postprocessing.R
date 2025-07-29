@@ -103,7 +103,7 @@ vi %>%
   ) +
   geom_col(width = 0.1) +
   geom_point(size = 3) +
-  scale_x_continuous(breaks = seq(from = 0, to = 0.12, by = 0.03), limits = c(0, 0.12)) +
+  scale_x_continuous(breaks = seq(from = 0, to = 0.15, by = 0.03), limits = c(0, 0.15)) +
   xlab("Variable Importance") +
   ylab("") +
   scale_fill_brewer(
@@ -180,7 +180,7 @@ for(i in 1:length(vars.list)) {
   )
   p <- p +
     ylab("average relative likelihood of RVF") +
-    ylim(0, 0.1) +
+    ylim(0, 0.12) +
     theme(
       strip.text.x = element_text(size = 11)
     )

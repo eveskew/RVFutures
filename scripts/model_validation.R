@@ -138,7 +138,7 @@ table(d2$RVF_positive, useNA = "ifany")
 
 # Add grid cell information to the data frame
 
-r <- terra::rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
+r <- terra::rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
 
 # Add cell-level data
 
@@ -296,7 +296,7 @@ for(i in 1:length(cells)) {
 
 # Add RVF likelihood predictions to the data frame
 
-years <- 2008:2021
+years <- 2008:2022
 
 files <- list.files(
   path = "data/prediction_rasters",
@@ -345,7 +345,7 @@ df %>%
     linetype = 2,
     se = FALSE
   ) +
-  xlab("Mean relative likelihood of RVF from 2008-2021") +
+  xlab("Mean relative likelihood of RVF from 2008-2022") +
   ylab("Estimated RVFV FOI") +
   guides(size = guide_legend(title = "Number\nof assays")) +
   theme_minimal() +

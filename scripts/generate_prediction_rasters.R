@@ -28,10 +28,10 @@ monthly.predictors <- read_csv("data/predictor_flat_files/monthly_predictors_his
 
 # Loop through years
 
-for(year in c(2008:2021)) {
+for(year in c(2008:2022)) {
   
   # Import a raster to serve as a template
-  r <- terra::rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
+  r <- terra::rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
   
   # Generate a data frame to hold predictions for this year
   d <- data.frame(
@@ -91,7 +91,7 @@ yearly.predictors <- read_csv("data/predictor_flat_files/yearly_predictors_histo
 monthly.predictors <- read_csv("data/predictor_flat_files/monthly_predictors_historical_climate.csv")
 
 # Import a raster to serve as a template
-r <- terra::rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
+r <- terra::rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
 
 # Generate a data frame to hold predictions for this year
 # (we'll use historical yearly predictors from the year 2000 to pair with our
@@ -165,7 +165,7 @@ for(g in gcms) {
     for(year in c(2030, 2050, 2070)) {
       
       # Import a raster to serve as a template
-      r <- terra::rast("data/rasters/precipitation/processed/wc2.1_2.5m_prec_2000-01.tif")
+      r <- terra::rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
       
       # Generate a data frame to hold predictions for this year
       d <- data.frame(
@@ -230,6 +230,176 @@ for(g in gcms) {
 #==============================================================================
 
 
+# Sensitivity analyses:
+# Generate prediction rasters for future climate scenarios but with historical
+# human population estimates
+
+gcms <- c(
+  "ACCESS-CM2", "BCC-CSM2-MR", "CMCC-ESM2", "EC-Earth3-Veg", 
+  "GISS-E2-1-G", "INM-CM5-0", "IPSL-CM6A-LR", "MIROC6",
+  "MPI-ESM1-2-HR", "MRI-ESM2-0", "UKESM1-0-LL"
+)
+scenarios <- c("SSP126", "SSP245", "SSP370")
+
+for(g in gcms) {
+  
+  print(g)
+  
+  for(s in scenarios) {
+    
+    print(s)
+    
+    # Loop through years
+    
+    for(year in c(2030, 2050, 2070)) {
+      
+      # Import a raster to serve as a template
+      r <- terra::rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
+      
+      # Generate a data frame to hold predictions for this year
+      d <- data.frame(
+        grid_cell = rep(1:(dim(r)[1] * dim(r)[2]), times = 12),
+        year = rep(year, (dim(r)[1] * dim(r)[2]) * 12),
+        month = rep(month.name, each = (dim(r)[1] * dim(r)[2]))
+      )
+      
+      # Fill the data frame with predictor data for this year
+      d <- d %>%
+        left_join(
+          ., 
+          static.predictors, 
+          by = "grid_cell"
+        ) %>%
+        left_join(
+          ., 
+          read_csv(paste0("data/predictor_flat_files/yearly_predictors_historical.csv")) %>%
+            filter(year == 2000) %>%
+            select(-year), 
+          by = c("grid_cell")
+        ) %>%
+        left_join(
+          ., 
+          read_csv(paste0("data/predictor_flat_files/monthly_predictors_", g, "_", s, ".csv")), 
+          by = c("grid_cell", "year", "month")
+        )
+      
+      obs <- nrow(d)
+      prop.missing <- sapply(1:ncol(d), function(x) sum(is.na(d[,x]))/obs)
+      assertthat::assert_that(max(prop.missing) < 0.16)
+      
+      d <- d %>%
+        mutate(
+          longitude = rep(NA, nrow(.)),
+          latitude = rep(NA, nrow(.)),
+          RVF_presence = rep(NA, nrow(.)),
+          month_numeric = rep(NA, nrow(.)),
+          training_group = rep(NA, nrow(.)),
+          testing_data = rep(NA, nrow(.))
+        )
+      
+      # Generate predictions using the fit model
+      d <- cbind(d, predict(full.training.fit, d, type = "prob"))
+      
+      # Generate raster templates for each month of this year
+      r <- rep(r, 12)
+      names(r) <- paste0(
+        "sensitivity_historical_humanpop_", g, "_", s, "_", year, "_", 
+        c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
+      )
+      varnames(r) <- "RVF_suitability"
+      
+      # Fill each month's raster with predicted values and save
+      for(i in 1:12) {
+        
+        values(r[[i]]) <- d[d$month == month.name[i], ".pred_1"]
+        writeRaster(r[[i]], paste0("data/prediction_rasters/", names(r)[i], ".tif"), overwrite = TRUE)
+      }
+    }
+  }
+}
+
+#==============================================================================
+
+
+# Sensitivity analyses:
+# Generate prediction rasters for future human population scenarios but with 
+# historical climate
+
+scenarios <- c("SSP126", "SSP245", "SSP370")
+
+for(s in scenarios) {
+  
+  print(s)
+  
+  # Loop through years
+  
+  for(year in c(2030, 2050, 2070)) {
+    
+    # Import a raster to serve as a template
+    r <- terra::rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-01.tif")
+    
+    # Generate a data frame to hold predictions for this year
+    d <- data.frame(
+      grid_cell = rep(1:(dim(r)[1] * dim(r)[2]), times = 12),
+      year = rep(year, (dim(r)[1] * dim(r)[2]) * 12),
+      month = rep(month.name, each = (dim(r)[1] * dim(r)[2]))
+    )
+    
+    # Fill the data frame with predictor data for this year
+    d <- d %>%
+      left_join(
+        ., 
+        static.predictors, 
+        by = "grid_cell"
+      ) %>%
+      left_join(
+        ., 
+        read_csv(paste0("data/predictor_flat_files/yearly_predictors_", s, ".csv")), 
+        by = c("grid_cell", "year")
+      ) %>%
+      left_join(
+        ., 
+        read_csv(paste0("data/predictor_flat_files/monthly_predictors_historical_climate.csv")), 
+        by = c("grid_cell", "month")
+      )
+    
+    obs <- nrow(d)
+    prop.missing <- sapply(1:ncol(d), function(x) sum(is.na(d[,x]))/obs)
+    assertthat::assert_that(max(prop.missing) < 0.16)
+    
+    d <- d %>%
+      mutate(
+        longitude = rep(NA, nrow(.)),
+        latitude = rep(NA, nrow(.)),
+        RVF_presence = rep(NA, nrow(.)),
+        month_numeric = rep(NA, nrow(.)),
+        training_group = rep(NA, nrow(.)),
+        testing_data = rep(NA, nrow(.))
+      )
+    
+    # Generate predictions using the fit model
+    d <- cbind(d, predict(full.training.fit, d, type = "prob"))
+    
+    # Generate raster templates for each month of this year
+    r <- rep(r, 12)
+    names(r) <- paste0(
+      "sensitivity_historical_climate_", s, "_", year, "_", 
+      c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
+    )
+    varnames(r) <- "RVF_suitability"
+    
+    # Fill each month's raster with predicted values and save
+    for(i in 1:12) {
+      
+      values(r[[i]]) <- d[d$month == month.name[i], ".pred_1"]
+      writeRaster(r[[i]], paste0("data/prediction_rasters/", names(r)[i], ".tif"), overwrite = TRUE)
+    }
+  }
+}
+
+#==============================================================================
+
+
 # Generate prediction raster summary table
 
 
@@ -283,7 +453,11 @@ prediction.raster.summary <- data.frame(
       "historical",
       "future"
     ),
-    gcm = str_extract(lyr, "[^,]+(?=_SSP)"),
+    sensitivity = ifelse(grepl("sensitivity", lyr), 1, 0),
+    gcm = case_when(
+      time_period == "future" & sensitivity == 0 ~ str_extract(lyr, "[^,]+(?=_SSP)"),
+      time_period == "future" & sensitivity == 1 & str_detect(lyr, "sensitivity_historical_humanpop_") ~ str_replace(str_extract(lyr, "[^,]+(?=_SSP)"), "sensitivity_historical_humanpop_", "")
+    ),
     scenario = str_extract(lyr, "SSP[0-9]{3}")
   )
 
