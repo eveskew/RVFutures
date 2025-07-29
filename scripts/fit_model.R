@@ -68,7 +68,7 @@ d.test <- readRDS("data/saved_objects/d.test.rds")
 table(d.test$year, d.test$RVF_presence)
 
 # Divide the training data into folds
-d.folds <- vfold_cv(d.train, v = 3, repeats = 5, strata = "RVF_presence")
+d.folds <- group_vfold_cv(d.train, group = "year")
 saveRDS(d.folds, "data/saved_objects/d.folds.rds")
 d.folds <- readRDS("data/saved_objects/d.folds.rds")
 
@@ -111,14 +111,14 @@ xgb.RVF.workflow
 
 # Parameter tuning: generate parameter grid, then tune using the training data
 xgb.grid <- grid_space_filling(
-  min_n(range = c(2L, 60L)),
+  min_n(range = c(2L, 40L)), # default
   mtry(range = c(2L, 15L)), 
   sample_prop(range = c(0.25, 1)),
   scale_pos_weight(range = c(0.5, 2)),
   stop_iter(range = c(3L, 20L)), # default
   tree_depth(range = c(1L, 3L)),
-  trees(range = c(50L, 1000L)),
-  size = 100
+  trees(range = c(50L, 2000L)),
+  size = 250
 )
 
 xgb.grid
