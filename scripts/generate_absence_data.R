@@ -31,7 +31,7 @@ d.sf <- st_as_sf(d, coords = c("GPS_x", "GPS_y"), crs = st_crs(east.africa))
 
 n.points.per.yrmon <- 150
 # Define the outbreak buffer radius in degrees
-outbreak.buffer.radius <- 0.2
+outbreak.buffer.radius <- 0.4
 
 #==============================================================================
 
@@ -53,7 +53,7 @@ for(year in 2008:2022) {
   # Generate a buffer representing RVF outbreak locations in the focal year
   outbreak.buffer <- d.sf %>%
     filter(outbreak_year == year) %>%
-    st_buffer(dist = outbreak.buffer.radius * 2) %>%
+    st_buffer(dist = outbreak.buffer.radius) %>%
     st_union()
   
   # Generate a data frame of random pseudo-absence points for the focal year, 
@@ -211,7 +211,7 @@ for(year in 2008:2022) {
   # Generate a buffer representing RVF outbreak locations in the focal year
   outbreak.buffer <- d.sf %>%
     filter(outbreak_year == year) %>%
-    st_buffer(dist = outbreak.buffer.radius * 2) %>%
+    st_buffer(dist = outbreak.buffer.radius) %>%
     st_union()
   
   # Pull the correct population raster from the raster stack
@@ -316,7 +316,7 @@ for(year in 2008:2022) {
   # Generate a buffer representing RVF outbreak locations in the focal year
   outbreak.buffer <- d.sf %>%
     filter(outbreak_year == year) %>%
-    st_buffer(dist = outbreak.buffer.radius * 2) %>%
+    st_buffer(dist = outbreak.buffer.radius) %>%
     st_union()
   
   # Modify the healthcare travel time raster to sample in the inverse
