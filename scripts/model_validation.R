@@ -25,12 +25,13 @@ col.types <- c(
   "text", "text", "numeric", "text", "text", 
   "text", "numeric", "numeric", "numeric", "text", 
   "text", "numeric", "numeric", "numeric", "text", 
-  "text", "text"
-)
+  "text", "text", "numeric", "numeric", "numeric"
+) 
 d <- readxl::read_xlsx(
-  "data/serology_data/East_Africa_RVF_data_human_Evan.7.9.xlsx",
+  "data/serology_data/East_Africa_RVF_data_human_Oct_16.xlsx",
   col_types = col.types, na = "NA"
-)
+)  %>%
+  select(-longitude_mod, -latitude_mod, -cell)
 colnames(d) <- c(
   "first_author", "country", "sample_ID", "location_ID", "region",
   "species", "age", "RVF_positive", "total_sampled", "date", 
@@ -59,15 +60,13 @@ d2 <- d
 # Modify date information in the data frame
 d2 <- d %>%
   mutate(
-    # some Excel dates imported incorrectly, so need to convert these
-    date_mod = as.character(openxlsx::convertToDate(date)),
     # then there are dates ambiguously specified: fix these to the midpoint of
     # the time range given
     date_mod = case_when(
       date == "May-Feburary" & year == "2018-2019" ~ "2018-10",
       date == "March-August" & year == "2017" ~ "2017-06",
       date == "November-May" & year == "2018-2019" ~ "2019-02",
-      TRUE ~ date_mod
+      TRUE ~ date
     ),
     # modify dates for Situma records
     date_mod = ifelse(
@@ -77,6 +76,12 @@ d2 <- d %>%
         substr(date_mod, 4, 5), "-",
         substr(date_mod, 1, 2)
       ),
+      date_mod
+    ),
+    # some Excel dates imported incorrectly, so need to convert these
+    date_mod = ifelse(
+      !str_detect(date, "-"),
+      as.character(openxlsx::convertToDate(date)),
       date_mod
     ),
     # for all other dates, take what we've got
@@ -119,7 +124,8 @@ d2 <- left_join(
   filter(
     !is.na(latitude_mod),
     !is.na(longitude_mod),
-    !is.na(age)
+    !is.na(age),
+    !is.na(RVF_positive)
   )
 
 nrow(d2)    
@@ -347,12 +353,13 @@ df %>%
   ) +
   xlab("Mean relative likelihood of RVF from 2008-2022") +
   ylab("Estimated RVFV FOI") +
+  scale_size_continuous(breaks = seq(from = 10, to = 80, by = 20)) +
   guides(size = guide_legend(title = "Number\nof assays")) +
   theme_minimal() +
   theme(
     text = element_text(size = 20),
     legend.position = "inside",
-    legend.position.inside = c(0.83, 0.8),
+    legend.position.inside = c(0.89, 0.85),
     legend.background = element_rect(fill = "white", color = "black")
   )
 
