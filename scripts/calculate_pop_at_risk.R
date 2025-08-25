@@ -4,8 +4,8 @@ library(tidyterra)
 
 source("R/functions.R")
 
-# Calculate human population at risk of RVF in the study region (Kenya, Uganda,
-# and Tanzania) under future climate scenarios
+# Calculate human population at risk of RVF in the study region 
+# (Kenya, Tanzania, and Uganda) under future climate scenarios
 
 #==============================================================================
 
@@ -173,7 +173,7 @@ write_csv(d, file = "data/misc/human_pop_at_risk.csv")
 # Plotting and summary tables
 
 d %>%
-  #filter(sensitivity == 0 | projection_layer == "historical_climate_1985") %>%
+  filter(sensitivity == 0 | projection_layer == "historical_climate_1985") %>%
   ggplot(aes(x = year, y = mean_RVF_relative_likelihood, color = scenario)) +
   geom_point() +
   xlim(1980, 2080) +
