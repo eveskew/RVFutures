@@ -34,13 +34,15 @@ month.character <- c("01", "02", "03", "04", "05", "06", "07", "08", "09",
 
 
 # Generate delta plots showing differences between model predictions for 
-# historical climates and all future climate scenarios
+# historical climate and all future climate scenarios
 
 all.files <- list.files(
   path = "data/prediction_rasters",
   pattern = ".tif",
   full.names = TRUE
 )
+all.files <- all.files[!grepl("sensitivity", all.files)]
+assert_that(length(all.files) == 1380)
 
 # Generate a 12-stack raster of monthly predictions for historical climate
 files <- all.files[str_detect(all.files, "historical")]
@@ -74,7 +76,7 @@ for(gcm in gcms) {
         scale_fill_gradient2(
           low = "darkgreen", mid = "floralwhite", high = "darkred",
           na.value = "white",
-          limits = c(-0.5, 0.5),
+          limits = c(-0.7, 0.7),
           name = "Change\nin RVF\nrelative\nlikelihood"
         ) +
         ggtitle(paste(gcm, ssp, timespans[which(years == year)], sep = ", ")) +
@@ -113,7 +115,7 @@ for(gcm in gcms) {
 
 
 # Generate delta plots showing differences between model predictions for 
-# historical climates and ensembled future climate scenarios
+# historical climate and ensembled future climate scenarios
 
 for(ssp in ssps.upper) {
   
@@ -145,7 +147,7 @@ for(ssp in ssps.upper) {
         low = "darkgreen", mid = "floralwhite", high = "darkred",
         na.value = "white",
         name = "Change\nin RVF\nrelative\nlikelihood",
-        limits = c(-0.35, 0.35)
+        limits = c(-0.7, 0.7)
       ) +
       ggtitle(paste("GCM Ensemble", ssp, timespans[which(years == year)], sep = ", ")) +
       theme_void() +
@@ -182,7 +184,7 @@ for(ssp in ssps.upper) {
 
 
 # Generate delta plots showing differences between precipitation for 
-# historical climates and ensemble future climate scenarios
+# historical climate and ensemble future climate scenarios
 
 all.files <- list.files(
   path = "data/rasters/precipitation/processed",
@@ -248,7 +250,7 @@ for(ssp in ssps) {
 
 
 # Generate delta plots showing differences between tmax for 
-# historical climates and ensemble future climate scenarios
+# historical climate and ensemble future climate scenarios
 
 all.files <- list.files(
   path = "data/rasters/temperature/processed",
@@ -314,7 +316,7 @@ for(ssp in ssps) {
 
 
 # Generate delta plots showing differences between tmin for 
-# historical climates and ensemble future climate scenarios
+# historical climate and ensemble future climate scenarios
 
 all.files <- list.files(
   path = "data/rasters/temperature/processed",

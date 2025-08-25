@@ -19,10 +19,10 @@ source("R/functions.R")
 east.africa <- load_country_map()
 lakes.10 <- readRDS("data/rasters/hydrology/saved_objects/lakes_east_africa_10.rds")
 
-# Import retrodictions from 2008-2021
+# Import retrodictions from 2008-2022
 files <- list.files(
   path = "data/prediction_rasters/",
-  pattern = paste(2008:2021, collapse = "|"),
+  pattern = paste(2008:2022, collapse = "|"),
   full.names = TRUE
 )
 
@@ -33,10 +33,11 @@ r.mask <- mask(r, east.africa)
 tss.cutoff <- readRDS("data/misc/tss.cutoff.rds")
 
 # Define plotting limits
-low <- -4
+low <- -5
 high <- 0
 
 list.val <- list(
+  "-5" = -5,
   "-4" = -4,
   "-3" = -3,
   "-2" = -2,
