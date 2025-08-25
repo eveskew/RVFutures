@@ -78,7 +78,7 @@ labels <- prs %>%
 r.sub <- subset(r.threshold, indices)
 names(r.sub) <- labels
 
-p <- ggplot() +
+ggplot() +
   geom_spatraster(data = r.sub) +
   geom_sf(data = lakes.10, col = NA, fill = "skyblue") +
   geom_sf(data = east.africa, linewidth = 0.5, fill = NA) +
@@ -93,12 +93,12 @@ p <- ggplot() +
   )
 
 ggsave("outputs/figures/retrodiction_map_through_time_threshold.jpg", 
-       plot = p, height = 14, width = 10)
+       height = 14, width = 10)
 
 #==============================================================================
 
 
-# Plot RVF risk probability maps for historical observed time period (2008-2021)
+# Plot RVF risk maps for historical observed time period (2008-2022)
 
 
 # Plot select months and years through time
@@ -107,7 +107,7 @@ ggsave("outputs/figures/retrodiction_map_through_time_threshold.jpg",
 r.sub <- subset(r.mask, indices)
 names(r.sub) <- labels
 
-p <- ggplot() +
+ggplot() +
   geom_spatraster(data = log10(r.sub)) +
   geom_sf(data = lakes.10, col = NA, fill = "skyblue") +
   geom_sf(data = east.africa, linewidth = 0.5, fill = NA) +
@@ -131,20 +131,20 @@ p <- ggplot() +
   )
 
 ggsave("outputs/figures/retrodiction_map_through_time_prob.jpg", 
-       plot = p, height = 14, width = 10)
+       height = 14, width = 10)
 
 
-# Plot mean risk for the historical observed time period (2008-2021)
+# Plot mean risk for the historical observed time period (2008-2022)
 
 # Generate a raster that represents the mean prediction across all months
-# from 2008-2021
-r.2008.2021 <- r.mask %>%
-  select(matches(as.character(2008:2021)))
-assert_that(dim(r.2008.2021)[3] == 14 * 12)
-r.2008.2021.mean <- mean(r.2008.2021)
+# from 2008-2022
+r.2008.2022 <- r.mask %>%
+  select(matches(as.character(2008:2022)))
+assert_that(dim(r.2008.2022)[3] == 15 * 12)
+r.2008.2022.mean <- mean(r.2008.2022)
 
 ggplot() +
-  geom_spatraster(data = log10(r.2008.2021.mean)) +
+  geom_spatraster(data = log10(r.2008.2022.mean)) +
   geom_sf(data = lakes.10, col = NA, fill = "skyblue") +
   geom_sf(data = east.africa, linewidth = 0.5, fill = NA) +
   scale_fill_gradient2(
@@ -159,7 +159,7 @@ ggplot() +
   )
 
 ggsave(
-  "outputs/figures/mapped_prediction_2008-2021.jpg", 
+  "outputs/figures/mapped_prediction_2008-2022.jpg", 
   height = 8, width = 8
 )
 
@@ -169,7 +169,7 @@ ggsave(
 east.africa.adm <- load_country_map_adm()
 
 ggplot() +
-  geom_spatraster(data = log10(r.2008.2021.mean)) +
+  geom_spatraster(data = log10(r.2008.2022.mean)) +
   geom_sf(data = lakes.10, col = NA, fill = "skyblue") +
   geom_sf(data = east.africa.adm, linewidth = 0.5, fill = NA) +
   scale_fill_gradient2(
@@ -187,12 +187,12 @@ ggplot() +
 # Threshold these predictions to more easily look at areas of high and low risk
 # across the study region
 
-r.2008.2021.mean.thresh <- r.2008.2021.mean >= tss.cutoff * 4
+r.2008.2022.mean.thresh <- r.2008.2022.mean >= tss.cutoff * 6
 
 ggplot() +
-  geom_spatraster(data = r.2008.2021.mean.thresh) +
+  geom_spatraster(data = r.2008.2022.mean.thresh) +
   geom_sf(data = lakes.10, col = NA, fill = "skyblue") +
-  geom_sf(data = east.africa, linewidth = 0.5, fill = NA) +
+  geom_sf(data = east.africa.adm, linewidth = 0.5, fill = NA) +
   scale_fill_manual(
     values = c(alpha("lemonchiffon2", 0.5), alpha("indianred3", 0.7)), 
     na.value = NA
@@ -205,21 +205,21 @@ ggplot() +
 
 
 # Plot mean risk for each season over the 
-# historical observed time period (2008-2021)
+# historical observed time period (2008-2022)
 
 # Generate mean risk predictions for Jan-Mar, Apr-Jun, Jul-Sep, and Oct-Dec
-# for the 2008-2021 time period
-r.2008.2021.seasons <- r.2008.2021 %>%
+# for the 2008-2022 time period
+r.2008.2022.seasons <- r.2008.2022 %>%
   tapp(
     ., 
     index = rep(c(1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4), times = 14),
     fun = "mean"
   )
-assert_that(dim(r.2008.2021.seasons)[3] == 4)
-names(r.2008.2021.seasons) <- c("Jan-Mar", "Apr-Jun", "Jul-Sep", "Oct-Dec")
+assert_that(dim(r.2008.2022.seasons)[3] == 4)
+names(r.2008.2022.seasons) <- c("Jan-Mar", "Apr-Jun", "Jul-Sep", "Oct-Dec")
 
-p.2008.2021.seasons <- ggplot() +
-  geom_spatraster(data = log10(r.2008.2021.seasons)) +
+p.2008.2022.seasons <- ggplot() +
+  geom_spatraster(data = log10(r.2008.2022.seasons)) +
   geom_sf(data = lakes.10, col = NA, fill = "skyblue") +
   geom_sf(data = east.africa, linewidth = 0.5, fill = NA) +
   scale_fill_gradient2(
@@ -251,7 +251,8 @@ p.2008.2021.seasons <- ggplot() +
 # Subset the masked predictions to the predictions made for historical 
 # (1970-2000) climate
 r.hist.clim <- r.mask %>%
-  select(matches("historical_climate"))
+  select(matches("historical_climate")) %>%
+  select(!matches("sensitivity"))
 assert_that(dim(r.hist.clim)[3] == 12)
 r.hist.clim.mean <- mean(r.hist.clim)
 
@@ -290,7 +291,8 @@ gcms <- c(
 for(gcm in gcms) {
   
   r.future.clim <- r.mask %>%
-    select(matches(gcm))
+    select(matches(gcm)) %>%
+    select(!matches("sensitivity"))
   assert_that(dim(r.future.clim)[3] == 12 * 9)
   index <- rep(1:(nlyr(r.future.clim)/12), each = 12)
   
@@ -339,7 +341,8 @@ for(ssp in ssps.upper) {
     
     r.future.clim <- r.mask %>%
       select(matches(ssp)) %>%
-      select(matches(year))
+      select(matches(year)) %>%
+      select(!matches("sensitivity"))
     assert_that(dim(r.future.clim)[3] == (12 * 11))
     
     r.future.clim.mean <- mean(r.future.clim)
@@ -392,9 +395,9 @@ a <- ggplot() +
   theme_void() +
   theme
 
-# Panel showing mean RVF risk predictions under historical weather (2008-2021)
+# Panel showing mean RVF risk predictions under historical weather (2008-2022)
 b <- ggplot() +
-  geom_spatraster(data = log10(r.2008.2021.mean)) +
+  geom_spatraster(data = log10(r.2008.2022.mean)) +
   geom_sf(data = lakes.10, col = NA, fill = "skyblue") +
   geom_sf(data = east.africa, linewidth = 0.5, fill = NA) +
   scale_fill_gradient2(
@@ -403,12 +406,12 @@ b <- ggplot() +
     breaks = unlist(list.val), limits = c(low, high),
     name = "Relative\nlikelihood\nof RVF"
   ) +
-  ggtitle("Historical weather\n(2008-2021)") +
+  ggtitle("Historical weather\n(2008-2022)") +
   theme_void() +
   theme
 
 # Calculate difference raster between historical weather and historical climate
-diff.contemp.hist <- r.2008.2021.mean - r.hist.clim.mean
+diff.contemp.hist <- r.2008.2022.mean - r.hist.clim.mean
 minmax(diff.contemp.hist)
 
 # Panel showing the difference raster between historical weather and historical
@@ -421,9 +424,9 @@ c <- ggplot() +
     low = "darkgreen", mid = "floralwhite", high = "darkred",
     na.value = "white",
     name = "Change\nin RVF\nlikelihood",
-    limits = c(-0.15, 0.15)
+    limits = c(-0.5, 0.5)
   ) +
-  ggtitle("Historical weather (2008-2021) vs.\nhistorical climate (1970-2000)") +
+  ggtitle("Historical weather (2008-2022) vs.\nhistorical climate (1970-2000)") +
   theme_void() +
   theme
 
@@ -431,7 +434,8 @@ c <- ggplot() +
 # time period
 r.future.clim <- r.mask %>%
   select(matches("370")) %>%
-  select(matches("2070"))
+  select(matches("2070")) %>%
+  select(!matches("sensitivity"))
 assert_that(dim(r.future.clim)[3] == (12 * 11))
 
 r.future.clim.mean <- mean(r.future.clim)
@@ -466,7 +470,7 @@ e <- ggplot() +
     low = "darkgreen", mid = "floralwhite", high = "darkred",
     na.value = "white",
     name = "Change\nin RVF\nlikelihood",
-    limits = c(-0.15, 0.15)
+    limits = c(-0.5, 0.5)
   ) +
   ggtitle("Future climate (2061-2080, SSP370) vs.\nhistorical climate (1970-2000)") +
   theme_void() +
@@ -493,33 +497,34 @@ ggsave(
 #==============================================================================
 
 
-# Plot summary data for prediction rasters over all years 2008-2021
+# Plot summary data for prediction rasters over all years 2008-2022
 
 # Panel using thresholded predictions to quantify the proportion of the study
 # region suitable for RVF
 text.size <- 18
 axis.title.y.size <- 18
 axis.text.size <- 14
+hjust <- -0.8
 
-ymin <- 0.2
-ymax <- 0.8
+ymin.suit <- 0.5
+ymax.suit <- 1
 
 short.rains <- data.frame(
   xmin = 10,
   xmax = 13,
-  ymin = ymin,
-  ymax = ymax
+  ymin = ymin.suit,
+  ymax = ymax.suit
 )
 
 long.rains <- data.frame(
   xmin = 3,
   xmax = 6,
-  ymin = ymin,
-  ymax = ymax
+  ymin = ymin.suit,
+  ymax = ymax.suit
 )
 
 suit <- prs %>%
-  filter(year %in% 2008:2021) %>%
+  filter(year %in% 2008:2022) %>%
   ggplot(aes(x = month_numeric + 0.5, y = prop_suitable, group = year, color = year)) +
   geom_rect(
     aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
@@ -531,12 +536,12 @@ suit <- prs %>%
     data = long.rains, inherit.aes = FALSE,
     fill = alpha("cornflowerblue", 0.15)
   ) +
-  geom_jitter(height = 0, width = 0.05, size = 3) +
+  geom_jitter(height = 0, width = 0.03, size = 3) +
   geom_line(linewidth = 0.2, linetype = 2) +
   scale_color_gradient2(
-    low = alpha("darkorange3", 0.7), 
-    mid = alpha("ivory2", 0.7),
-    high = alpha("dodgerblue3", 0.7),
+    low = alpha("darkorange3", 0.8), 
+    mid = alpha("ivory2", 0.8),
+    high = alpha("dodgerblue3", 0.8),
     midpoint = 2014.5
   ) +
   xlab("") +
@@ -547,7 +552,7 @@ suit <- prs %>%
     labels = c(month.abb, ""),
     limits = c(1, 13)
   ) +
-  ylim(ymin, ymax) +
+  ylim(ymin.suit, ymax.suit) +
   guides(
     color = guide_colorbar(position = "inside", direction = "horizontal")
   ) +
@@ -556,31 +561,31 @@ suit <- prs %>%
     text = element_text(size = text.size),
     axis.title.y = element_text(size = axis.title.y.size),
     axis.text = element_text(size = axis.text.size),
-    axis.text.x = element_text(hjust = -0.5),
+    axis.text.x = element_text(hjust = hjust),
     legend.position = "none"
   )
 
 # Panel using predictions on the probability scale to quantify the mean risk
 # across the study region
-ymin <- 0
-ymax <- 0.03
+ymin.prob <- 0
+ymax.prob <- 0.3
 
 short.rains <- data.frame(
   xmin = 10,
   xmax = 13,
-  ymin = ymin,
-  ymax = ymax
+  ymin = ymin.prob,
+  ymax = ymax.prob
 )
 
 long.rains <- data.frame(
   xmin = 3,
   xmax = 6,
-  ymin = ymin,
-  ymax = ymax
+  ymin = ymin.prob,
+  ymax = ymax.prob
 )
 
 mean <- prs %>%
-  filter(year %in% 2008:2021) %>%
+  filter(year %in% 2008:2022) %>%
   ggplot(aes(x = month_numeric + 0.5, y = mean_prob_mask, group = year, color = year)) +
   geom_rect(
     aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
@@ -592,12 +597,12 @@ mean <- prs %>%
     data = long.rains, inherit.aes = FALSE,
     fill = alpha("cornflowerblue", 0.15)
   ) +
-  geom_jitter(height = 0, width = 0.05, size = 3) +
+  geom_jitter(height = 0, width = 0.03, size = 3) +
   geom_line(linewidth = 0.2, linetype = 2) +
   scale_color_gradient2(
-    low = alpha("darkorange3", 0.7), 
-    mid = alpha("ivory2", 0.7),
-    high = alpha("dodgerblue3", 0.7),
+    low = alpha("darkorange3", 0.8), 
+    mid = alpha("ivory2", 0.8),
+    high = alpha("dodgerblue3", 0.8),
     midpoint = 2014.5
   ) +
   xlab("") +
@@ -608,7 +613,7 @@ mean <- prs %>%
     labels = c(month.abb, ""),
     limits = c(1, 13)
   ) +
-  ylim(ymin, ymax) +
+  ylim(ymin.prob, ymax.prob) +
   guides(
     color = guide_colorbar(position = "inside", direction = "horizontal")
   ) +
@@ -617,7 +622,7 @@ mean <- prs %>%
     text = element_text(size = text.size),
     axis.title.y = element_text(size = axis.title.y.size),
     axis.text = element_text(size = axis.text.size),
-    axis.text.x = element_text(hjust = -0.5),
+    axis.text.x = element_text(hjust = hjust),
     legend.position.inside = c(0.58, 0.87),
     legend.key.width = unit(1.5, "cm"),
     legend.title = element_blank()
@@ -629,18 +634,18 @@ cowplot::plot_grid(
   labels = "auto"
 )
 
-ggsave("outputs/figures/retrodiction_summary_2008-2021.jpg", 
+ggsave("outputs/figures/retrodiction_summary_2008-2022.jpg", 
        height = 12, width = 12)
 
 
 # Add seasonal maps to this figure
 
 cowplot::plot_grid(
-  mean, suit, p.2008.2021.seasons, ncol = 1,
+  mean, suit, p.2008.2022.seasons, ncol = 1,
   labels = "auto", label_size = 20, rel_heights = c(1, 1, 1)
 )
 
-ggsave("outputs/figures/retrodiction_summary_2008-2021_w_seasons.jpg", 
+ggsave("outputs/figures/retrodiction_summary_2008-2022_w_seasons.jpg", 
        height = 16, width = 12)
 
 
@@ -662,13 +667,13 @@ suit <- prs %>%
     labels = c(month.abb, ""),
     limits = c(1, 13)
   ) +
-  ylim(0.2, 0.8) +
+  ylim(ymin.suit, ymax.suit) +
   scale_color_manual(values = palette) +
   theme_minimal() +
   theme(
     text = element_text(size = text.size),
     axis.text = element_text(size = axis.text.size),
-    axis.text.x = element_text(hjust = -0.5),
+    axis.text.x = element_text(hjust = hjust),
     legend.position = "none"
   )
 
@@ -686,7 +691,7 @@ mean <- prs %>%
     labels = c(month.abb, ""),
     limits = c(1, 13)
   ) +
-  ylim(0, 0.03) +
+  ylim(ymin.prob, ymax.prob) +
   scale_color_manual(values = palette) +
   guides(
     color = guide_legend(position = "inside")
@@ -695,7 +700,7 @@ mean <- prs %>%
   theme(
     text = element_text(size = text.size),
     axis.text = element_text(size = axis.text.size),
-    axis.text.x = element_text(hjust = -0.5),
+    axis.text.x = element_text(hjust = hjust),
     legend.position.inside = c(0.8, 0.8),
     legend.text = element_text(size = 28),
     legend.key.width = unit(1.5, "cm"),
@@ -714,12 +719,12 @@ ggsave("outputs/figures/retrodiction_summary_select_years.jpg",
 # Alternative plot
 
 prs %>%
-  filter(year %in% 2008:2021) %>%
+  filter(year %in% 2008:2022) %>%
   ggplot(aes(x = year, y = mean_prob_mask, color = month)) +
   geom_line() +
   xlab("") +
   ylab("Mean relative likelihood of RVF outbreak") +
-  ylim(0, 0.03) +
+  ylim(0, 0.25) +
   theme_minimal()
 
 #==============================================================================
@@ -737,6 +742,7 @@ palette <- c(alpha("black"), palette[c(1,4,2)])
 # Subset prediction summary table to only future climate scenarios
 ll.mod <- prs %>%
   filter(year %in% c(2030, 2050, 2070)) %>%
+  filter(sensitivity == 0) %>%
   mutate(
     year = case_when(
       year == 2030 ~ "2021-2040",
@@ -778,7 +784,7 @@ p.prop.suit <- ll.mod %>%
     labels = c(month.abb, ""),
     limits = c(1, 13)
   ) +
-  ylim(0.2, 0.8) +
+  ylim(0.5, 1) +
   scale_color_manual(values = palette) +
   scale_fill_manual(values = alpha(palette, 0.5)) +
   facet_grid(scenario~year) +
@@ -788,6 +794,7 @@ p.prop.suit <- ll.mod %>%
     axis.title.y = element_text(size = axis.title.y.size),
     axis.text = element_text(size = axis.text.size),
     axis.text.x = element_text(hjust = 0),
+    axis.text.y = element_text(size = 18),
     legend.position = "none",
     legend.title = element_blank()
   )
@@ -825,7 +832,7 @@ p.prob <- ll.mod %>%
      labels = c(month.abb, ""),
      limits = c(1, 13)
    ) +
-  ylim(0, 0.03) +
+  ylim(0, 0.25) +
   scale_color_manual(values = palette) +
   scale_fill_manual(values = alpha(palette, 0.5)) +
   facet_grid(scenario ~ year) +
@@ -835,6 +842,7 @@ p.prob <- ll.mod %>%
     axis.title.y = element_text(size = axis.title.y.size),
     axis.text = element_text(size = axis.text.size),
     axis.text.x = element_text(hjust = 0),
+    axis.text.y = element_text(size = 18),
     legend.position = "none",
     legend.title = element_blank()
   )
@@ -848,6 +856,13 @@ ggsave(
 # Generate a simplified version of the mean probability figure with only three
 # panels (combine SSP scenarios into the same panel)
 palette2 <- rep("gainsboro", 4)
+
+ll.all <- bind_rows(ll.historical, ll.historical, ll.historical) %>%
+  mutate(
+    scenario = rep("Historical", times = nrow(.)),
+    year = rep(c("2021-2040", "2041-2060", "2061-2080"), each = 12)
+  ) %>%
+  bind_rows(ll.mod)
 
 p.prob.simple <- ll.mod %>%
   group_by(year, scenario, month_numeric) %>%
@@ -874,7 +889,7 @@ p.prob.simple <- ll.mod %>%
     labels = c(month.abb, ""),
     limits = c(1, 13)
   ) +
-  ylim(0, 0.026) +
+  ylim(0, 0.25) +
   scale_color_manual(values = palette[2:4], limits = c("SSP126", "SSP245", "SSP370")) +
   scale_fill_manual(values = alpha(palette2, 0.3), limits = c("SSP126", "SSP245", "SSP370")) +
   facet_wrap(~year) +
@@ -885,8 +900,48 @@ p.prob.simple <- ll.mod %>%
     strip.text = element_text(size = text.size),
     axis.text = element_text(size = axis.text.size),
     axis.text.x = element_text(hjust = 0),
+    axis.text.y = element_text(size = 18),
     legend.position = "bottom",
     legend.title = element_blank()
+  )
+
+p.prob.simple2 <- ll.all %>%
+  group_by(year, scenario, month_numeric) %>%
+  summarize(
+    mean_mean_prob = mean(mean_prob_mask),
+    max_mean_prob = max(mean_prob_mask),
+    min_mean_prob = min(mean_prob_mask)
+  ) %>%
+  ggplot(
+    aes(x = month_numeric + 0.5, y = mean_mean_prob, group = scenario, color = scenario, fill = scenario, linetype = scenario),
+    linetype = rep(2, 1, 1, 1)
+  ) +
+  geom_ribbon(aes(ymin = min_mean_prob, ymax = max_mean_prob), linewidth = 0) +
+  geom_line(linewidth = 1.5) +
+  ylab("Mean relative likelihood of RVF") +
+  scale_x_continuous(
+    breaks = 1:13, 
+    minor_breaks = NULL,
+    labels = c(month.abb, ""),
+    limits = c(1, 13)
+  ) +
+  ylim(0, 0.25) +
+  scale_color_manual(values = palette) +
+  scale_fill_manual(values = alpha(palette2, 0.3)) +
+  scale_linetype_manual(values = c(2, 1, 1, 1)) +
+  facet_wrap(~year) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = text.size),
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size = axis.title.y.size),
+    strip.text = element_text(size = text.size),
+    axis.text = element_text(size = axis.text.size),
+    axis.text.x = element_text(hjust = 0),
+    axis.text.y = element_text(size = 18),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    legend.key.width = unit(0.7, "inches")
   )
 
 #==============================================================================
@@ -898,6 +953,7 @@ d.humanpop <- read_csv("data/misc/human_pop_at_risk.csv")
 
 d.humanpop.mod <- d.humanpop %>%
   filter(year %in% c(2030, 2050, 2070)) %>%
+  filter(sensitivity == 0) %>%
   mutate(
     year = case_when(
       year == 2030 ~ "2021-2040",
@@ -906,23 +962,30 @@ d.humanpop.mod <- d.humanpop %>%
     ),
     year = as.factor(year)
   )
+assert_that(nrow(d.humanpop.mod) == 99)
   
 p.humanpop <- d.humanpop.mod %>%
-  filter(scenario != "historical") %>%
   ggplot(aes(x = as.factor(year), y = pop_size_at_risk/1000000, fill = scenario)) +
-  geom_boxplot(width = 0.5) +
-  xlab("") +
+  geom_boxplot(width = 0.8) +
   ylab("Human pop. at risk (millions)") +
-  ylim(0, 150) +
-  scale_x_discrete(position = "top") +
+  ylim(50, 200) +
   scale_fill_manual(values = palette[2:4]) +
+  facet_wrap(~year, scales = "free_x") +
   theme_minimal() +
   theme(
     text = element_text(size = text.size),
+    axis.title.x = element_blank(),
     axis.title.y = element_text(size = axis.title.y.size),
-    axis.text = element_text(size = text.size),
+    strip.text = element_text(size = text.size),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(size = 18),
     legend.position = "bottom",
-    legend.title = element_blank()
+    legend.title = element_blank(),
+    panel.grid = element_line(color = "grey"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_line(linewidth = 0.4),
+    panel.grid.minor.y = element_line(linewidth = 0.2)
   )
 
 ggsave(
@@ -939,12 +1002,11 @@ ggsave(
 
 p.humanpop.mod <- p.humanpop + 
   theme(
-    legend.position = "none",
-    axis.text.y = element_text(size = 18)
+    legend.position = "none"
   )
 
 cowplot::plot_grid(
-  p.prob.simple, p.humanpop.mod,
+  p.prob.simple2, p.humanpop.mod,
   nrow = 2, rel_heights = c(1.2, 1),
   labels = "auto", label_size = 28
 )
@@ -957,12 +1019,78 @@ ggsave(
 #==============================================================================
 
 
+# Figure to illustrate human population at risk sensitivity analyses
+
+d.humanpop.mod <- d.humanpop %>%
+  filter(year %in% c(2030, 2050, 2070)) %>%
+  mutate(
+    year = case_when(
+      year == 2030 ~ "2021-2040",
+      year == 2050 ~ "2041-2060",
+      year == 2070 ~ "2061-2080"
+    ),
+    year = as.factor(year),
+    group = case_when(
+      sensitivity == 0 ~ "climate change +\nhuman population change",
+      sensitivity == 1 & str_detect(projection_layer, "sensitivity_historical_climate") ~ "fixed climate +\nhuman population change",
+      sensitivity == 1 & str_detect(projection_layer, "sensitivity_historical_humanpop") ~ "climate change +\nfixed human population"
+    ),
+    group = factor(group, levels = c(
+      "climate change +\nhuman population change",
+      "climate change +\nfixed human population",
+      "fixed climate +\nhuman population change"
+    )
+    )
+  )
+assert_that(nrow(d.humanpop.mod) == 99 + 9 + 99)
+
+historical.value <- d.humanpop %>%
+  filter(year == 1985) %>%
+  pull(pop_size_at_risk)
+
+d.humanpop.mod %>%
+  ggplot(aes(x = group, y = pop_size_at_risk/1000000, fill = scenario)) +
+  geom_boxplot(width = 0.8) +
+  geom_hline(yintercept = historical.value/1000000, lty = 2, linewidth = 1) +
+  ylab("Human pop. at risk (millions)") +
+  ylim(25, 225) +
+  scale_fill_manual(values = palette[2:4]) +
+  facet_wrap(~year, scales = "free_x") +
+  theme_minimal() +
+  theme(
+    text = element_text(size = text.size),
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size = axis.title.y.size),
+    strip.text = element_text(size = text.size),
+    axis.text.x = element_text(angle = 50, size = 12, vjust = 1.1, hjust = 0.9),
+    axis.text.y = element_text(size = 18),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_line(color = "grey"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_line(linewidth = 0.4),
+    panel.grid.minor.y = element_line(linewidth = 0.2)
+  ) +
+  facet_wrap(~year)
+
+ggsave(
+  "outputs/figures/humanpop_at_risk_sensitivity_analysis.jpg",
+  height = 10, width = 16
+)
+
+#==============================================================================
+
+
 # Alternative visualization of change in average prediction for 
 # future climate scenarios
 
 # Generate a raster stack that combines global climate model results across 
 # months, years, and SSP scenarios
-future.predictions <- select(r.mask, matches("SSP"))
+future.predictions <- r.mask %>%
+  select(matches("SSP")) %>%
+  select(!matches("sensitivity"))
+assert_that(dim(future.predictions)[3] == 1188)
 
 combine.gcms <- tapp(
   future.predictions, 
@@ -972,7 +1100,14 @@ combine.gcms <- tapp(
 assert_that(dim(combine.gcms)[3] == 12 * 3 * 3)
 
 names(combine.gcms) <- 
-  str_replace(names(select(r.mask, matches("ACCESS"))), "ACCESS-CM2_", "")
+  str_replace(
+    r.mask %>%
+      select(matches("ACCESS")) %>%
+      select(!matches("sensitivity")) %>%
+      names(), 
+    "ACCESS-CM2_", 
+    ""
+  )
 
 # Calculate difference between this raster stack and historical climate
 diffs <- combine.gcms - r.hist.clim
