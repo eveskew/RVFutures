@@ -353,7 +353,7 @@ df %>%
   ) +
   xlab("Mean relative likelihood of RVF from 2008-2022") +
   ylab("Estimated RVFV FOI") +
-  scale_size_continuous(breaks = seq(from = 10, to = 80, by = 20)) +
+  scale_size_area(breaks = seq(from = 20, to = 80, by = 20)) +
   guides(size = guide_legend(title = "Number\nof assays")) +
   theme_minimal() +
   theme(
