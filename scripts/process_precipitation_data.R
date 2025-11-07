@@ -251,8 +251,6 @@ ggplot() +
     text = element_text(size = 20)
   )
 
-# ggsave("precipitation_projection_example.jpg", units = "px", width = 3000, height = 1000)
-
 # Make the data tidy
 tidy <- r.sub %>%
   # extract data for every cell
@@ -281,8 +279,6 @@ ggplot() +
   ggtitle("January precipitation through time (raster pixel 70000)") +
   ylab("Precipitation (mm)") +
   theme_minimal()
-
-# ggsave("precipitation_model_example.jpg", units = "px", width = 2000, height = 1000)
 
 # Fit a linear model on the observed data from this pixel to confirm the projected
 # values

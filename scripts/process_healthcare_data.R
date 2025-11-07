@@ -29,10 +29,7 @@ if(!dir.exists("data/rasters/healthcare/processed")) {
 
 writeRaster(
   r.resample, 
-  paste0(
-    "data/rasters/healthcare/processed/", 
-    "healthcare_2.5min.tif"
-  ),
+  "data/rasters/healthcare/processed/healthcare_2.5min.tif",
   overwrite = TRUE
 )
 

@@ -33,20 +33,20 @@ x <- rast("data/rasters/precipitation/processed/wc2.1_cruts4.09_2.5m_prec_2000-0
 vrt.resample <- resample(vrt, x, "bilinear")
 slope.resample <- resample(slope, x, "bilinear")
 
-# Save the merged, resampled raster file
+# Save the resampled raster files
 if(!dir.exists("data/rasters/elevation/processed")) {
   dir.create("data/rasters/elevation/processed")
 }
 
 writeRaster(
   vrt.resample, 
-  paste0("data/rasters/elevation/processed/elevation_2.5min.tif"),
+  "data/rasters/elevation/processed/elevation_2.5min.tif",
   overwrite = TRUE
 )
 
 writeRaster(
   slope.resample, 
-  paste0("data/rasters/elevation/processed/slope_2.5min.tif"),
+  "data/rasters/elevation/processed/slope_2.5min.tif",
   overwrite = TRUE
 )
 

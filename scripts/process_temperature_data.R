@@ -281,9 +281,10 @@ d <- data.frame(
 ) %>%
   mutate(
     year = ifelse(year == 1970, 1985, year),
+    month = factor(month.name[as.numeric(month)], levels = month.name),
     type = case_when(
       year == 1985 ~ "Historical climate",
-      year %in% 2000:2023 ~ "Historical weather",
+      year %in% 2000:2024 ~ "Historical weather",
       year %in% c(2030, 2050, 2070) ~ str_extract(files, "ssp[0-9]{3}")
     ),
     type = str_replace(type, "ssp", "SSP")
@@ -301,6 +302,9 @@ gcms <- d %>%
   filter(!is.na(gcm)) %>%
   pull(gcm)
 
+palette <- wesanderson::wes_palette("Royal1")
+palette <- c("black", "gray", palette[c(1,4,2)])
+
 for(var in variables) {
   
   for(g in gcms) {
@@ -317,10 +321,12 @@ for(var in variables) {
       xlim(1980, 2080) +
       ylim(14, 34) +
       ggtitle(g) +
+      scale_color_manual(values = palette) +
       theme_minimal() +
       theme(
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
+        legend.text = element_text(size = 12),
         legend.position = "bottom"
       ) +
       facet_wrap(~month)
