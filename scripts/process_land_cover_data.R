@@ -9,49 +9,10 @@ source("R/functions.R")
 #==============================================================================
 
 
-# For all years, load in MODIS land cover raster data and crop to 
+# For the years 2000-2015, load in LUH2 land cover raster data and crop to 
 # relevant country extents
 
 east.africa <- load_country_map()
-
-# years <- as.character(2003:2022)
-# 
-# # Loop through all years
-# for(i in years) {
-#   
-#   # Pull raster file name for that year
-#   file <- list.files(
-#     path = "data/rasters/land_cover/MODIS", 
-#     pattern = paste0("A", i),
-#     full.names = TRUE
-#   )
-#   print(file)
-#   
-#   # Import the raster
-#   r <- rast(file)
-#   
-#   # Reproject the raster to EPSG 4326, if needed
-#   if(crs(r, describe = TRUE)$code != "4326" | is.na(crs(r, describe = TRUE)$code)) {r <- project(x = r, y = "epsg:4326")}
-#   
-#   # Crop the raster
-#   crop <- terra::crop(r, east.africa)
-#   
-#   # Save the cropped raster
-#   if(!dir.exists("data/rasters/land_cover/processed")) {
-#     dir.create("data/rasters/land_cover/processed")
-#   }
-#   writeRaster(
-#     crop, 
-#     paste0("data/rasters/land_cover/processed/", i, ".tif"),
-#     overwrite = TRUE
-#   )
-# }
-
-#==============================================================================
-
-
-# For the years 2000-2015, load in LUH2 land cover raster data and crop to 
-# relevant country extents
 
 r <- rast("data/rasters/land_cover/LUH2/states.nc")
 ext(r) <- c(-180, 180, -90, 90)
@@ -216,15 +177,15 @@ for(i in years) {
   names(b) <- i
   
   # Save the cropped raster
-  if(!dir.exists("data/rasters/land_cover/best_class")) {
-    dir.create("data/rasters/land_cover/best_class")
-  }
-  
-  writeRaster(
-    b, 
-    paste0("data/rasters/land_cover/best_class/", i, ".tif"),
-    overwrite = TRUE
-  )
+  # if(!dir.exists("data/rasters/land_cover/best_class")) {
+  #   dir.create("data/rasters/land_cover/best_class")
+  # }
+  # 
+  # writeRaster(
+  #   b, 
+  #   paste0("data/rasters/land_cover/best_class/", i, ".tif"),
+  #   overwrite = TRUE
+  # )
 } 
   
 #==============================================================================
@@ -232,33 +193,33 @@ for(i in years) {
 
 # Load in the best land cover class data for each year, effectively getting 
 # a raster stack with each year's data as a layer
-files <- list.files(
-  path = "data/rasters/land_cover/best_class",
-  full.names = TRUE
-)
-
-r <- rast(files)
-assert_that(dim(r)[3] == 25)
-
+# files <- list.files(
+#   path = "data/rasters/land_cover/best_class",
+#   full.names = TRUE
+# )
+# 
+# r <- rast(files)
+# assert_that(dim(r)[3] == 25)
+# 
 # Plot and save the land cover raster data
-p <- ggplot() +
-  geom_spatraster(data = as.factor(r), maxcell = 5000) +
-  facet_wrap(~lyr) +
-  theme_void()
+# p <- ggplot() +
+#   geom_spatraster(data = as.factor(r), maxcell = 5000) +
+#   facet_wrap(~lyr) +
+#   theme_void()
+# 
+# if(!dir.exists("outputs/predictor_layers")) {
+#   dir.create("outputs/predictor_layers")
+# }
+#
+# ggsave(
+#   p,
+#   filename = "outputs/predictor_layers/land_cover_best_class.jpg",
+#   width = 5000,
+#   height = 5000,
+#   units = "px"
+# )
 
-if(!dir.exists("outputs/predictor_layers")) {
-  dir.create("outputs/predictor_layers")
-}
-
-ggsave(
-  p,
-  filename = "outputs/predictor_layers/land_cover_best_class.jpg",
-  width = 5000,
-  height = 5000,
-  units = "px"
-)
-
- #==============================================================================
+#==============================================================================
 
 
 # Generate plots for all land cover categories for the years 2000-2024
@@ -303,7 +264,7 @@ for(var in base.names) {
 #==============================================================================
 
 
-# Generate plots of median and mean values for different land use variables 
+# Generate plots of median and mean values for different land cover variables 
 # in different SSP scenarios over time
 
 files <- list.files(
@@ -361,7 +322,7 @@ p <- d %>%
 
 ggsave(
   p,
-  filename = paste0("outputs/predictor_layers/land_cover_all_scenarios_median.jpg"),
+  filename = "outputs/predictor_layers/land_cover_all_scenarios_median.jpg",
   width = 3000,
   height = 2000,
   units = "px"
@@ -385,7 +346,7 @@ p <- d %>%
 
 ggsave(
   p,
-  filename = paste0("outputs/predictor_layers/land_cover_all_scenarios_mean.jpg"),
+  filename = "outputs/predictor_layers/land_cover_all_scenarios_mean.jpg",
   width = 3000,
   height = 2000,
   units = "px"

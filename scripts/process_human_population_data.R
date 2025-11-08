@@ -322,7 +322,7 @@ p <- d %>%
 
 ggsave(
   p,
-  filename = paste0("outputs/predictor_layers/human_population_all_scenarios.jpg"),
+  filename = "outputs/predictor_layers/human_population_all_scenarios.jpg",
   width = 3000,
   height = 2000,
   units = "px"
