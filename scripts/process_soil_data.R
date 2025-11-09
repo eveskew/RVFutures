@@ -42,7 +42,7 @@ if(!dir.exists("data/rasters/soil/processed")) {
 
 writeRaster(
   r.r, 
-  paste0("data/rasters/soil/processed/soil_2.5min.tif"),
+  "data/rasters/soil/processed/soil_2.5min.tif",
   overwrite = TRUE
 )
 

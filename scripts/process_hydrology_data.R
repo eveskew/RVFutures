@@ -27,6 +27,10 @@ ggplot() +
   geom_sf(data = lakes.all, fill = "blue") +
   theme_minimal()
 
+if(!dir.exists("data/rasters/hydrology/saved_objects")) {
+  dir.create("data/rasters/hydrology/saved_objects")
+}
+
 saveRDS(lakes.all, file = "data/rasters/hydrology/saved_objects/lakes_east_africa_all.rds")
 
 
