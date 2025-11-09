@@ -381,7 +381,7 @@ for(year in 2008:2022) {
       outbreak_month = rep(month.name, each = n.points.per.yrmon)
     )
   
-  travel.points <- rbind(travel.points, temp)  
+  travel.points <- bind_rows(travel.points, temp)  
 }
 
 #==============================================================================
