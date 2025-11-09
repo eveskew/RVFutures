@@ -313,7 +313,7 @@ for(s in scenarios) {
 # (so need grid cells, years, and months)
 
 n.cells <- 413 * 301
-years <- 2007:2022
+years <- 2000:2022
 n.years <- length(years)
 n.months <- 12
 
@@ -322,37 +322,6 @@ d <- data.frame(
   month = rep(rep(month.name, each = n.cells), times = n.years),
   grid_cell = rep(1:n.cells, times = n.years * n.months)
 )
-
-
-# Add NDVI data to the data frame
-
-# Load in NDVI raster files
-# files <- list.files(
-#   path = "data/rasters/NDVI/processed",
-#   pattern = paste(years, collapse = "|"),
-#   full.names = TRUE
-# )
-# 
-# files
-# 
-# r <- rast(files)
-# 
-# d$monthly_NDVI <- as.numeric(values(r))
-# 
-# for(year in unique(d$year)) {
-#   
-#   for(month in month.name) {
-#     
-#     print(c(year, month))
-#   
-#     # Subset to the correct raster layer
-#     if(year <= 2023) {layer <- r[[paste0("Monthly_NDVI_", year, "_", month.table[month])]]}
-#     if(year > 2023) {layer <- r[[paste0("projected_", year, "_", month.table[month])]]}
-#     
-#     # Extract values
-#     d[d$year == year & d$month == month, "monthly_NDVI"] <- as.numeric(values(layer))
-#   }
-# }
 
 
 # Add precipitation data to the data frame
@@ -370,7 +339,7 @@ r <- rast(files)
 
 d$monthly_precip <- NA
 
-for(year in 2007:2022) {
+for(year in years) {
   
   for(month in month.name) {
     
@@ -401,7 +370,7 @@ r <- rast(files)
 d$monthly_tmax <- NA
 d$monthly_tmin <- NA
 
-for(year in 2007:2022) {
+for(year in years) {
   
   for(month in month.name) {
     
@@ -448,10 +417,7 @@ d <- d %>%
     cum_precip_3_months_prior = 
       monthly_precip_lag_1 + monthly_precip_lag_2 + monthly_precip_lag_3
   ) %>%
-  ungroup() %>%
-  # remove the year 2007 as this was only included to generate lagged variables
-  # for 2008
-  filter(year != 2007)
+  ungroup()
 
 
 # Write monthly predictor data to disk
@@ -459,6 +425,12 @@ d <- d %>%
 write_csv(d, "data/predictor_flat_files/monthly_predictors_historical_weather.csv")
 
 filename <- "data/predictor_reports/monthly_predictors_historical_weather.csv"
+
+# In this case, generating the predictor report for all years of predictor data
+# takes an extremely large amount of memory: restricting the predictor report
+# to years of data relevant to this project
+
+d <- filter(d, year >= 2008)
 
 generate_predictor_report(
   dataframe = d,
