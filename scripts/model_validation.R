@@ -258,6 +258,8 @@ cells <- unique(data.sub$cell)
 df <- create_empty_table(length(cells), 5)
 colnames(df) <- c("lambda", "se", "cell", "n_individuals", "n_positive")
 
+set.seed(8)
+
 for(i in 1:length(cells)) {
   
   site <- subset(data.sub, cell == cells[i])
