@@ -5,6 +5,14 @@ library(future)
 
 source("R/functions.R")
 
+# Note: This model-fitting workflow is stochastic. While model objects are 
+# saved to enable reproducibility, a re-run of this script will
+# produce slightly different model fits. First, "group_vfold_cv()" may assign
+# different years to different training data folds, even if the full underlying
+# training dataset is identical. Second, "grid_space_filling()" will produce 
+# different parameter sets, even given the same function call. As a result,
+# the XGBoost model fits may differ as the script is re-run.
+
 #==============================================================================
 
 
