@@ -77,8 +77,8 @@ names(collapse.months.mask) <-
 assertthat::assert_that(dim(collapse.months.mask)[3] == 208)
 
 
-# Sum across months to get rasters that indicate the number of months a 
-# year that a grid cell is suitable for RVF
+# Sum across months in the thresholded raster stack to get rasters that 
+# indicate the number of months a year that a grid cell is suitable for RVF
 collapse.months.threshold <- tapp(
   r.threshold.sub,
   fun = "sum",
