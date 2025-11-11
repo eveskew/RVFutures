@@ -103,7 +103,7 @@ ggsave("outputs/figures/retrodiction_map_through_time_threshold.jpg",
 
 # Plot select months and years through time
 
-# Subset the masked probability predictions accordingly
+# Subset the masked predictions accordingly
 r.sub <- subset(r.mask, indices)
 names(r.sub) <- labels
 
@@ -134,7 +134,7 @@ ggsave("outputs/figures/retrodiction_map_through_time_prob.jpg",
        height = 14, width = 10)
 
 
-# Plot mean risk for the historical observed time period (2008-2022)
+# Plot mean risk over the historical observed time period (2008-2022)
 
 # Generate a raster that represents the mean prediction across all months
 # from 2008-2022
@@ -204,8 +204,7 @@ ggplot() +
   )
 
 
-# Plot mean risk for each season over the 
-# historical observed time period (2008-2022)
+# Plot mean seasonal risk over the historical observed time period (2008-2022)
 
 # Generate mean risk predictions for Jan-Mar, Apr-Jun, Jul-Sep, and Oct-Dec
 # for the 2008-2022 time period
@@ -276,9 +275,33 @@ ggsave(
   height = 8, width = 8
 )
 
+# Also produce a version of this map at the monthly scale to facilitate 
+# comparison with future climate scenario change maps 
+# (made with the "plot_deltas.R" script)
+names(r.hist.clim) <- month.name
+
+p <- ggplot() +
+  geom_spatraster(data = log10(r.hist.clim)) +
+  geom_sf(data = east.africa, fill = NA) +
+  scale_fill_gradient2(
+    low = "darkslategray", mid = "lemonchiffon", high = "indianred4",  
+    midpoint = log10(tss.cutoff), na.value = NA, 
+    breaks = unlist(list.val), limits = c(low, high),
+    name = "Relative\nlikelihood\nof RVF"
+  ) +
+  ggtitle("Historical climate (1970-2000)") +
+  theme_void() +
+  facet_wrap(~lyr)
+
+ggsave(
+  filename = "outputs/figures/mapped_prediction_1970-2000_monthly.jpg", 
+  plot = p,
+  height = 10,
+  width = 10
+)
+
 
 # Future climates
-
 
 # Plots for each global climate model separately
 
@@ -326,7 +349,6 @@ for(gcm in gcms) {
   )
 }
 
-
 # Plots for each SSP scenario-year combination, averaging over global climate
 # models
 
@@ -372,15 +394,16 @@ for(ssp in ssps.upper) {
 #==============================================================================
 
 
-# Create multi-panel figure showing RVF risk predictions for historical climate,
-# historical weather, and future climate (only 2061-2080, SSP370)
+# Create multi-panel figure showing RVF risk predictions for 
+# historical climate (1970-2000), historical weather (2008-2022), 
+# and future climate (only SSP370, 2061-2080)
 
 theme <- theme(
   text = element_text(size = 20),
   plot.title = element_text(hjust = 0.5, size = 22)
 )
 
-# Panel showing mean RVF risk predictions under historical climate (1970-200)
+# Panel showing mean RVF risk predictions under historical climate (1970-2000)
 a <- ggplot() +
   geom_spatraster(data = log10(r.hist.clim.mean)) +
   geom_sf(data = lakes.10, col = NA, fill = "skyblue") +
@@ -523,6 +546,8 @@ long.rains <- data.frame(
   ymax = ymax.suit
 )
 
+set.seed(8)
+
 suit <- prs %>%
   filter(year %in% 2008:2022) %>%
   ggplot(aes(x = month_numeric + 0.5, y = prop_suitable, group = year, color = year)) +
@@ -583,6 +608,8 @@ long.rains <- data.frame(
   ymin = ymin.prob,
   ymax = ymax.prob
 )
+
+set.seed(8)
 
 mean <- prs %>%
   filter(year %in% 2008:2022) %>%
