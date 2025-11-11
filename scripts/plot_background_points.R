@@ -9,10 +9,10 @@ sf_use_s2(FALSE)
 
 source("R/functions.R")
 
+# Generate a figure showing background point locations used in modeling
+
 #==============================================================================
 
-
-# Generate a figure showing background point locations used in modeling
 
 # Import background outlines of Kenya, Tanzania, and Uganda and 
 # large lakes layer
