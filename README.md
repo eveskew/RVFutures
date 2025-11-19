@@ -2,7 +2,7 @@
 
 This repository contains code, data, and figures that support:
 
-Eskew, E.A., E. Clancey, D. Singh, S. Situma, L. Nyakarahuka, M. K. Njenga, and S. L. Nuismer. Interepidemic Rift Valley fever in East Africa: The recent risk landscape and projected impacts of global change.
+Eskew, E.A., E. Clancey, D. Singh, S. Situma, L. Nyakarahuka, M. K. Njenga, and S. L. Nuismer. *In press*. Interepidemic Rift Valley fever in East Africa: The recent risk landscape and projected impacts of global change. Proceedings of the Royal Society B.
 
 ---
 
@@ -22,7 +22,7 @@ Models of interepidemic Rift Valley fever (RVF) relied on a suite of spatially-e
 
 - Topography
 
-    - Elevation data from [SRTM](https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-srtm-1) (1 arcsecond resolution)
+    - Elevation data from the [Shuttle Radar Topography Mission (SRTM)](https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-srtm-1) (1 arcsecond resolution)
 
     - Slope was calculated using the elevation data described above
 
@@ -32,7 +32,7 @@ Models of interepidemic Rift Valley fever (RVF) relied on a suite of spatially-e
 
 - Livestock density
 
-    - Cattle, goat, and sheep density data from [Gridded Livestock of the World version 4](https://dataverse.harvard.edu/dataverse/glw) (5 arcminute resolution)
+    - Cattle, goat, and sheep density data from [Gridded Livestock of the World (version 4)](https://dataverse.harvard.edu/dataverse/glw) (5 arcminute resolution)
 
 - Human population density
 
@@ -46,7 +46,7 @@ Models of interepidemic Rift Valley fever (RVF) relied on a suite of spatially-e
 
     - Historical climate data from [WorldClim](https://www.worldclim.org/data/worldclim21.html) (2.5 arcminute resolution)
 
-    - Projected climate data from [WorldClim](https://www.worldclim.org/data/cmip6/cmip6climate.html) (downscaled output from various CMIP6 models at 2.5 arcminute resolution)
+    - Projected climate data from [WorldClim](https://www.worldclim.org/data/cmip6/cmip6climate.html) (downscaled output from various CMIP6 climate models at 2.5 arcminute resolution)
 
 --- 
 
@@ -56,44 +56,44 @@ To help explain the project scripts, the overall workflow is as follows:
 
 #### Gather predictor variables
 
-- [`get_SoilGrids_data.R`](/scripts/get_SoilGrids_data.R) programmatically downloads the soil predictor data. All other predictor data were manually downloaded from the online resources described above
+- [`get_SoilGrids_data.R`](/scripts/get_SoilGrids_data.R) programmatically downloads the soil predictor data. All other predictor data were manually downloaded from the online resources described above.
 
 #### Process predictor variables
 
-- [`process_all_predictors.R`](/scripts/process_all_predictors.R) processes all predictor data into rasters of 2.5 arcminute resolution. This script calls the various `process_*_data.R` scripts that each handle a certain type of predictor data. Note that these scripts do need to be called in the order prescribed by `process_all_predictors.R` so that intermediate files are available, as needed
+- [`process_all_predictors.R`](/scripts/process_all_predictors.R) processes all predictor data into rasters of 2.5 arcminute resolution. This script calls the various `process_*_data.R` scripts that each handle a certain type of predictor data. Note that these scripts do need to be called in the order prescribed by `process_all_predictors.R` so that intermediate files are available, as needed.
 
-- [`generate_predictor_flat_files.R`](/scripts/generate_predictor_flat_files.R) takes the 2.5 arcminute raster predictor files and generates flat CSV files describing the predictor data for each grid cell across the study region. Predictor data in this format are necessary for downstream modeling. Note that these flat predictor files are generated for both historical and future climate conditions
+- [`generate_predictor_flat_files.R`](/scripts/generate_predictor_flat_files.R) takes the 2.5 arcminute raster predictor files and generates flat CSV files describing the predictor data for each grid cell across the study region. Predictor data in this format are necessary for downstream modeling. Note that these flat predictor files are generated for both historical and future climate conditions.
 
 #### Prepare data for modeling
 
-- [`prep_outbreak_data.R`](/scripts/prep_outbreak_data.R) prepares the [raw outbreak data](/data/outbreak_data/outbreak_data_raw.csv) for use in interepidemic RVF modeling. Generates two versions of the outbreak data, one with missing location coordinates filled with administrative unit centroids ([outbreak_data_centroid_filled.csv](data/outbreak_data/outbreak_data_centroid_filled.csv)) and one with replicated outbreak data that are randomly filled from the known administrative unit areas ([outbreak_data_randomly_filled.csv](data/outbreak_data/outbreak_data_randomly_filled.csv))
+- [`prep_outbreak_data.R`](/scripts/prep_outbreak_data.R) prepares the [raw outbreak data](/data/outbreak_data/outbreak_data_raw.csv) for use in interepidemic RVF modeling. Generates two versions of the outbreak data, one with missing location coordinates filled with administrative unit centroids ([outbreak_data_centroid_filled.csv](data/outbreak_data/outbreak_data_centroid_filled.csv)) and one with replicated outbreak data that are randomly filled from the known administrative unit areas ([outbreak_data_randomly_filled.csv](data/outbreak_data/outbreak_data_randomly_filled.csv)).
 
-- [`generate_absence_data.R`](/scripts/generate_absence_data.R) generates the background (i.e., pseudo-absence) data for use in interepidemic RVF modeling. Produces the `outbreak_data_*_pseudoabsences.csv` files in the [data/outbreak_data](/data/outbreak_data/) subdirectory
+- [`generate_absence_data.R`](/scripts/generate_absence_data.R) generates the background (i.e., pseudo-absence) data for use in interepidemic RVF modeling. Produces the `outbreak_data_*_pseudoabsences.csv` files in the [data/outbreak_data](/data/outbreak_data/) subdirectory.
 
-- [`extract_outbreak_absence_predictors.R`](/scripts/extract_outbreak_absence_predictors.R) uses the predictor flat files to generate a data frame with predictor data for all observed interepidemic RVF outbreak events as well as the background points. Produces the `outbreak_data_*_pseudoabsences_predictors.csv` files in the [data/outbreak_data](/data/outbreak_data/) subdirectory
+- [`extract_outbreak_absence_predictors.R`](/scripts/extract_outbreak_absence_predictors.R) uses the predictor flat files to generate a data frame with predictor data for all observed interepidemic RVF outbreak events as well as the background points. Produces the `outbreak_data_*_pseudoabsences_predictors.csv` files in the [data/outbreak_data](/data/outbreak_data/) subdirectory.
 
 #### Modeling of interepidemic RVF
 
-- [`fit_model.R`](/scripts/fit_model.R) fits and saves an XGBoost model of the disease outbreak and background data. These objects are saved in the [data/saved_objects](/data/saved_objects/) subdirectory
+- [`fit_model.R`](/scripts/fit_model.R) fits and saves an XGBoost model of the disease outbreak and background data. These objects are saved in the [data/saved_objects](/data/saved_objects/) subdirectory.
 
 #### Model post-processing and validation
 
-- [`model_postprocessing.R`](/scripts/model_postprocessing.R) uses saved XGBoost model objects to generate ROC curve, variable importance, and partial dependence plots. Also calculates the cutoff value that maximizes the true skill statistic (TSS) for use in downstream analyses
+- [`model_postprocessing.R`](/scripts/model_postprocessing.R) uses the saved XGBoost model objects to generate ROC curve, variable importance, and partial dependence plots. Also calculates the cutoff value that maximizes the true skill statistic (TSS) for use in downstream analyses.
 
-- [`generate_prediction_rasters.R`](/scripts/generate_prediction_rasters.R) uses saved XGBoost model objects to generate prediction rasters showing the relative likelihood of RVF across the study region. These prediction rasters are generated for all months of the calendar year using predictor data describing historical climate (1970-2000), historical weather (2008-2022), and future climate conditions. Summary data written to [prediction_raster_summary.csv](/data/misc/prediction_raster_summary.csv)
+- [`generate_prediction_rasters.R`](/scripts/generate_prediction_rasters.R) uses the saved XGBoost model objects to generate prediction rasters showing the relative likelihood of RVF across the study region. These prediction rasters are generated for all months of the calendar year using predictor data describing historical climate (1970-2000), historical weather (2008-2022), and future climate conditions. Summary data written to [prediction_raster_summary.csv](/data/misc/prediction_raster_summary.csv).
 
-- [`model_validation.R`](/scripts/model_validation.R) calculates grid cell-level RVFV force of infection (FOI) and combines these estimates with RVF relative likelihood values from the prediction raster layers to validate our model's predictive ability. Also generates the accompanying figure. Data written to [serology_data_for_validation.csv](/data/serology_data/serology_data_for_validation.csv)
+- [`model_validation.R`](/scripts/model_validation.R) estimates grid cell-level RVFV force of infection (FOI) and combines these estimates with RVF relative likelihood values from the prediction rasters to validate our model's predictive ability. Also generates the accompanying figure. Data written to [serology_data_for_validation.csv](/data/serology_data/serology_data_for_validation.csv).
 
-- [`calculate_pop_at_risk.R`](/scripts/calculate_pop_at_risk.R) combines predicted RVF relative likelihood values from the prediction rasters with estimates of future human population density to calculate the future population at risk. Estimates written to [human_pop_at_risk.csv](/data/misc/human_pop_at_risk.csv)
+- [`calculate_pop_at_risk.R`](/scripts/calculate_pop_at_risk.R) combines predicted RVF relative likelihood values from the prediction rasters with estimates of future human population density to calculate the future population at risk. Estimates written to [human_pop_at_risk.csv](/data/misc/human_pop_at_risk.csv).
 
 #### Plotting
 
-- [`plot_outbreak_data.R`](/scripts/plot_outbreak_data.R) generates figures showing the distribution of observed interepidemic RVF outbreak events
+- [`plot_outbreak_data.R`](/scripts/plot_outbreak_data.R) generates figures showing the distribution of observed interepidemic RVF outbreak events.
 
-- [`plot_background_points.R`](/scripts/plot_background_points.R) generates a single figure showing the background points used in XGBoost modeling
+- [`plot_background_points.R`](/scripts/plot_background_points.R) generates a single figure showing the background points used in XGBoost modeling.
 
-- [`plot_main.R`](/scripts/plot_main.R) is the project's primary plotting script
+- [`plot_main.R`](/scripts/plot_main.R) is the project's primary plotting script.
 
-- [`plot_deltas.R`](/scripts/plot_deltas.R) generates monthly-level figures showing change over time in precipitation and temperature variables as well as model-based predictions
+- [`plot_deltas.R`](/scripts/plot_deltas.R) generates monthly-level figures showing change over time in precipitation and temperature variables as well as model-based predictions.
 
-- [`plot_gif.R`](/scripts/plot_gif.R) generates a GIF of monthly predictions from 2008-2022
+- [`plot_gif.R`](/scripts/plot_gif.R) generates a GIF of monthly predictions from 2008-2022.
