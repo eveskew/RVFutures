@@ -215,7 +215,7 @@ r.2008.2022.seasons <- r.2008.2022 %>%
     fun = "mean"
   )
 assert_that(dim(r.2008.2022.seasons)[3] == 4)
-names(r.2008.2022.seasons) <- c("Jan-Mar", "Apr-Jun", "Jul-Sep", "Oct-Dec")
+names(r.2008.2022.seasons) <- c("Jan\u2013Mar", "Apr\u2013Jun", "Jul\u2013Sep", "Oct\u2013Dec")
 
 p.2008.2022.seasons <- ggplot() +
   geom_spatraster(data = log10(r.2008.2022.seasons)) +
@@ -772,9 +772,9 @@ ll.mod <- prs %>%
   filter(sensitivity == 0) %>%
   mutate(
     year = case_when(
-      year == 2030 ~ "2021-2040",
-      year == 2050 ~ "2041-2060",
-      year == 2070 ~ "2061-2080"
+      year == 2030 ~ "2021\u20132040",
+      year == 2050 ~ "2041\u20132060",
+      year == 2070 ~ "2061\u20132080"
     ),
     year = as.factor(year)
   )
@@ -887,7 +887,7 @@ palette2 <- rep("gainsboro", 4)
 ll.all <- bind_rows(ll.historical, ll.historical, ll.historical) %>%
   mutate(
     scenario = rep("Historical", times = nrow(.)),
-    year = rep(c("2021-2040", "2041-2060", "2061-2080"), each = 12)
+    year = rep(c("2021\u20132040", "2041\u20132060", "2061\u20132080"), each = 12)
   ) %>%
   bind_rows(ll.mod)
 
@@ -983,9 +983,9 @@ d.humanpop.mod <- d.humanpop %>%
   filter(sensitivity == 0) %>%
   mutate(
     year = case_when(
-      year == 2030 ~ "2021-2040",
-      year == 2050 ~ "2041-2060",
-      year == 2070 ~ "2061-2080"
+      year == 2030 ~ "2021\u20132040",
+      year == 2050 ~ "2041\u20132060",
+      year == 2070 ~ "2061\u20132080"
     ),
     year = as.factor(year)
   )
