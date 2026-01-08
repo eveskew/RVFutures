@@ -167,6 +167,12 @@ x.dim <- st_bbox(east.africa)[3] - st_bbox(east.africa)[1]
 y.dim <- st_bbox(east.africa)[4] - st_bbox(east.africa)[2]
 yx.ratio <- round(y.dim/x.dim, digits = 1)
 
+labels <- data.frame(
+  x = c(37, 34.8, 33.2),
+  y = c(1.4, -6.4, 2.7),
+  label = c("Kenya", "Tanzania", "Uganda")
+)
+
 
 # Plot a map with the elevation and hydrology layers
 ggplot() +
@@ -201,6 +207,12 @@ ggplot() +
     fill = NA,
     linewidth = 1
   ) +
+  geom_label(
+    data = labels, 
+    aes(x = x, y = y, label = label),
+    fill = alpha("ghostwhite", 0.7), 
+    size = 6
+  ) +
   geom_sf(data = d, size = 4, color = alpha("darkred", 0.5)) +
   annotation_scale(
     location = "bl",
@@ -225,7 +237,7 @@ ggplot() +
   guides(
     size = "none", 
     alpha = "none",
-    fill = guide_colorbar(title = "Elevation\n(meters)")
+    fill = guide_colorbar(title = "Elevation\n(metres)")
   ) +
   theme(
     legend.position = "inside",
