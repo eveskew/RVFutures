@@ -2,7 +2,7 @@
 
 This repository contains code, data, and figures that support:
 
-Eskew, E.A., E. Clancey, D. Singh, S. Situma, L. Nyakarahuka, M. K. Njenga, and S. L. Nuismer. *In press*. Interepidemic Rift Valley fever in East Africa: The recent risk landscape and projected impacts of global change. Proceedings of the Royal Society B.
+Eskew, E.A., E. Clancey, D. Singh, S. Situma, L. Nyakarahuka, M. K. Njenga, and S. L. Nuismer. 2026. [Interepidemic Rift Valley fever in East Africa: The recent risk landscape and projected impacts of global change](https://doi.org/10.1098/rspb.2025.2193). Proceedings of the Royal Society B 293: 20252193.
 
 ---
 
